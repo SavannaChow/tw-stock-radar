@@ -114,6 +114,7 @@ Classic setup: retail outflow (TDCC) + institutional accumulation (T86 streak) +
 
 ### 📊 Dark HUD Dashboard — 5 tabs <a id="dashboard"></a>
 
+- **Watchlist** — server-persisted picks with live quote, volume, chips, and an at-a-glance five-part risk screen for liquidity, volatility, chase risk, positioning, and fundamentals; missing data is never treated as safe
 - **Radar** — temperature gauge, animated three.js reactor orb, sector heat flow, live signal cards with stop/TP
 - **Sectors** — capital flow treemap (area = stock count, color = return)
 - **Chips Flow** — T86 net buy rankings, trust accumulation list, margin hot list, TDCC retail-exit leaderboard

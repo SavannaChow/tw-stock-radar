@@ -210,7 +210,8 @@ def _load_df(code: str, live: bool, yf_timeout: float = 10.0):
 def _merge_chips(code: str, live: bool) -> dict:
     """三大法人：對齊 build_state 的合併邏輯(chip_confirm 同式)。"""
     out = {"foreign_net": None, "trust_net": None, "instinv_net": None,
-           "consec_buy_days": None, "trust_consec_days": None, "chip_confirm": None}
+           "consec_buy_days": None, "trust_consec_days": None, "chip_confirm": None,
+           "chip_net_n": None, "trust_net_sum": None, "chip_days": scan.CHIP_DAYS}
     if scan.chips is None:
         return out
     try:
@@ -224,6 +225,7 @@ def _merge_chips(code: str, live: bool) -> dict:
             "foreign_net": rec["foreign_net"], "trust_net": rec["trust_net"],
             "instinv_net": rec["instinv_net"], "consec_buy_days": rec["consec_buy_days"],
             "trust_consec_days": rec.get("trust_consec_days"), "chip_confirm": bool(ft_buy),
+            "chip_net_n": rec.get("net_sum_n"), "trust_net_sum": rec.get("trust_net_sum"),
         })
     return out
 
@@ -373,6 +375,11 @@ def analyze_stock(code: str, live: bool = False) -> dict:
     fund = _merge_fundamentals(resolved)
     ind = _full_indicators(df, live)
     ext = _extended_indicators(df, live)
+    try:
+        import risk as _risk
+        risk_metrics = _risk.history_metrics(df, live=live)
+    except Exception:
+        risk_metrics = {}
 
     result = {
         "ok": True,
@@ -391,7 +398,7 @@ def analyze_stock(code: str, live: bool = False) -> dict:
         **chips, **margin, **tdcc,
         # ── 完整指標(pct_b 為前端契約鍵名，percent_b 保留為別名) ──
         "adx": core["adx"], "pct_b": core["percent_b"], "percent_b": core["percent_b"],
-        **ind, **ext,
+        **ind, **ext, **risk_metrics,
         # 額外參考(不破壞卡片；前端可忽略)
         "mom5": core.get("mom5"), "relvol": core.get("relvol"),
         "above20": core.get("above20"), "above60": core.get("above60"),

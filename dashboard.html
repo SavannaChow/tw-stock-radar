@@ -165,6 +165,22 @@
   .wl-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 9px}
   .wl-metric{min-width:0}.wl-metric .k{font-size:12px;color:var(--faint);white-space:nowrap}
   .wl-metric .v{font-family:var(--mono);font-size:15px;font-weight:650;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wl-risk{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:var(--r-sm);background:rgba(0,0,0,.14)}
+  .wl-risk-head{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--dim)}
+  .wl-risk-head b{font-size:15px;margin-left:auto}.wl-risk.high .wl-risk-head b{color:var(--up)}
+  .wl-risk.watch .wl-risk-head b{color:var(--gold)}.wl-risk.ok .wl-risk-head b{color:var(--dn)}
+  .wl-risk.unknown .wl-risk-head b{color:var(--faint)}
+  .wl-risk-note{font-size:12px;color:var(--faint);margin-left:2px}
+  .wl-risk-reasons{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+  .wl-risk-reason{font-size:12px;line-height:1.45;color:var(--txt);border:1px solid rgba(255,215,94,.24);background:rgba(255,215,94,.065);border-radius:6px;padding:4px 7px}
+  .wl-risk-cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+  .wl-risk-cat{min-width:0;border:1px solid var(--hair);border-radius:7px;padding:8px 9px;background:rgba(255,255,255,.018)}
+  .wl-risk-cat .h{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim)}
+  .wl-risk-cat .dot{width:7px;height:7px;border-radius:50%;background:var(--faint);flex:0 0 auto}
+  .wl-risk-cat.high .dot{background:var(--up);box-shadow:0 0 8px rgba(255,77,109,.45)}
+  .wl-risk-cat.watch .dot{background:var(--gold);box-shadow:0 0 8px rgba(255,215,94,.35)}
+  .wl-risk-cat.ok .dot{background:var(--dn)}.wl-risk-cat.na .dot{background:var(--faint)}
+  .wl-risk-cat .s{font-family:var(--mono);font-size:12.5px;font-weight:650;color:var(--txt);line-height:1.5;margin-top:4px;overflow-wrap:anywhere}
   .wl-plan{display:flex;gap:15px;flex-wrap:wrap;margin-top:13px;padding-top:11px;border-top:1px solid var(--hair);
     font-family:var(--mono);font-size:13px;color:var(--dim)}
   .wl-plan b{font-weight:700}.wl-empty{text-align:center;padding:52px 20px;color:var(--dim);border:1px dashed var(--line2);border-radius:var(--r-md);font-size:14px}
@@ -172,7 +188,8 @@
   @media(max-width:900px){.wl-cards{grid-template-columns:1fr}.wl-summary{grid-template-columns:repeat(3,1fr)}}
   @media(max-width:560px){.wl-head{display:block}.wl-actions{margin-top:12px;justify-content:flex-start}.wl-summary{grid-template-columns:repeat(2,1fr)}
     .wl-metrics{grid-template-columns:repeat(2,1fr);gap:13px 10px}.wl-card{padding:15px}.wl-name{font-size:19px}.wl-price{font-size:30px}
-    .wl-code{font-size:13px}.wl-ind{font-size:12px}.wl-pill{font-size:12px}.wl-metric .k{font-size:12px}.wl-metric .v{font-size:15px}.wl-plan{font-size:13px}}
+    .wl-code{font-size:13px}.wl-ind{font-size:12px}.wl-pill{font-size:12px}.wl-metric .k{font-size:12px}.wl-metric .v{font-size:15px}.wl-plan{font-size:13px}
+    .wl-risk-cats{grid-template-columns:1fr}.wl-risk-cat .s{font-size:13px}.wl-risk-reason{font-size:12.5px}}
 
   .grid{display:grid;grid-template-columns:360px 1fr;gap:14px}
   @media(max-width:880px){.grid{grid-template-columns:1fr}}
@@ -1054,7 +1071,7 @@
     <section class="panel">
       <div class="wl-head">
         <div><div class="wl-title">我的自選股</div>
-          <div class="wl-desc">集中檢視今日漲跌、趨勢、量價、籌碼與既有交易訊號。點卡片可開啟完整個股分析。</div></div>
+          <div class="wl-desc">集中檢視今日漲跌、量價、籌碼與五面向風險快篩。燈號用來排除風險，不代表買賣建議；點卡片可開啟既有完整分析。</div></div>
         <div class="wl-actions"><span class="wl-updated" id="watchUpdated">尚未更新</span>
           <button class="wl-refresh" id="watchRefresh" type="button">↻ 更新即時資料</button></div>
       </div>
@@ -2510,6 +2527,13 @@ if(SNAP){ loadHistory(); }
     const maGap=(s.price!=null&&s.ma20)?((s.price/s.ma20-1)*100):null;
     const plan=(s.stop!=null||s.tp1!=null)?`<div class="wl-plan"><span>停損 <b style="color:var(--dn)">${s.stop??'—'}</b></span><span>目標一 <b style="color:var(--up)">${s.tp1??'—'}</b></span><span>目標二 <b style="color:var(--up)">${s.tp2??'—'}</b></span></div>`:'';
     const metric=(k,v,col)=>`<div class="wl-metric"><div class="k">${k}</div><div class="v"${col?` style="color:${col}"`:''}>${v}</div></div>`;
+    const risk=s.watch_risk;
+    const riskBox=(()=>{
+      if(!risk||!Array.isArray(risk.categories)) return `<section class="wl-risk unknown"><div class="wl-risk-head"><span>風險快篩</span><b>資料不足</b></div><div class="wl-risk-reasons"><span class="wl-risk-reason">風險資料尚未完成，不能視為低風險</span></div></section>`;
+      const reasons=(risk.reasons||[]).map(x=>`<span class="wl-risk-reason">${safe(x)}</span>`).join('');
+      const cats=risk.categories.map(c=>`<div class="wl-risk-cat ${safe(c.level||'unknown')}"><div class="h"><span class="dot"></span><span>${safe(c.label||'')}</span></div><div class="s">${safe(c.summary||'—')}</div></div>`).join('');
+      return `<section class="wl-risk ${safe(risk.level||'unknown')}"><div class="wl-risk-head"><span>五面向風險快篩</span><span class="wl-risk-note">不是買賣建議</span><b>${safe(risk.label||'資料不足')}</b></div>${reasons?`<div class="wl-risk-reasons">${reasons}</div>`:''}<div class="wl-risk-cats">${cats}</div></section>`;
+    })();
     return `<article class="wl-card ${side||''}" data-watch-open="${safe(s.code)}">`+
       `<button class="wl-remove" data-unwatch="${safe(s.code)}" title="移除自選股" aria-label="移除 ${safe(s.name||s.code)}">×</button>`+
       `<div class="wl-top"><div><div class="wl-code">${safe(s.code)}</div><div class="wl-name">${safe(s.name||s.code)}</div><div class="wl-ind">${safe(s.industry||'')}</div></div>`+
@@ -2520,7 +2544,7 @@ if(SNAP){ loadHistory(); }
       `${metric('RSI',wlNum(s.rsi,1),s.rsi>=70?'var(--up)':s.rsi<=30?'var(--dn)':null)}${metric('MA20乖離',maGap==null?'—':sign(Number(maGap.toFixed(1)))+'%',maGap==null?null:chgColor(maGap))}`+
       `${metric('ADX',wlNum(s.adx,1),s.adx>=25?'var(--gold)':null)}${metric('相對量',s.relvol==null?'—':wlNum(s.relvol,1)+'x',s.relvol>=1.5?'var(--gold)':null)}`+
       `${metric('外資',s.foreign_net==null?'—':(s.foreign_net>0?'+':'')+wlInt(s.foreign_net)+'張',s.foreign_net==null?null:chgColor(s.foreign_net))}${metric('投信',s.trust_net==null?'—':(s.trust_net>0?'+':'')+wlInt(s.trust_net)+'張',s.trust_net==null?null:chgColor(s.trust_net))}`+
-      `${metric('融資增減',s.margin_chg==null?'—':(s.margin_chg>0?'+':'')+wlInt(s.margin_chg)+'張')}${metric('本益比',wlNum(s.pe,1))}</div>${plan}`+
+      `${metric('融資增減',s.margin_chg==null?'—':(s.margin_chg>0?'+':'')+wlInt(s.margin_chg)+'張')}${metric('本益比',wlNum(s.pe,1))}</div>${riskBox}${plan}`+
       `${s.ok===false?`<div class="wl-error">${safe(s.error||'資料暫時無法取得')}</div>`:''}</article>`;
   }
 

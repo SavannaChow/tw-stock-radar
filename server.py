@@ -71,6 +71,7 @@ class Handler(SimpleHTTPRequestHandler):
             return hit[2]
 
         import query
+        import risk as risk_mod
         try:
             import realtime_quote
         except Exception:
@@ -101,7 +102,11 @@ class Handler(SimpleHTTPRequestHandler):
                     "volume": quote.get("volume"),
                     "quote_time": quote.get("time"),
                     "traded": quote.get("traded"),
+                    "bid": quote.get("bid"),
+                    "ask": quote.get("ask"),
                 })
+            row.update(risk_mod.quote_metrics(row))
+            row["watch_risk"] = risk_mod.assess(row)
             return row
 
         rows: list[dict | None] = [None] * len(items)
