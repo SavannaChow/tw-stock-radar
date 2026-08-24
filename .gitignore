@@ -6,6 +6,7 @@ __pycache__/
 cache/
 data/
 logs/
+loop.log
 *.db
 *.sqlite
 .venv/
@@ -15,8 +16,10 @@ state.json
 state_zones.json
 history.json
 signals_book.json
+signals_log.json
+watchlist.json
+docker-data/
 posts/
 dist/
 build/
 *.egg-info/
-

@@ -45,6 +45,7 @@ py-modules = [
     "tdcc", "margin", "daily_post", "auto_eod", "team_server",
     "track", "news", "twse_price", "query", "fundamentals",
     "health", "realtime_quote", "zones", "server", "eod", "loop",
+    "storage", "watchlist",
 ]
 
 [tool.setuptools.packages.find]

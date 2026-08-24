@@ -38,9 +38,10 @@ import pandas as pd
 HERE = Path(__file__).resolve().parent
 CACHE_DIR = HERE / "cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
-STATE_FILE = HERE / "state.json"
-SIG_LOG = HERE / "signals_log.json"    # 已推過的訊號(去重)
-HIST_FILE = HERE / "history.json"      # 當日已確認訊號流水(給看板回顧)
+from storage import runtime_path
+STATE_FILE = runtime_path("state.json")
+SIG_LOG = runtime_path("signals_log.json")    # 已推過的訊號(去重)
+HIST_FILE = runtime_path("history.json")      # 當日已確認訊號流水(給看板回顧)
 
 sys.path.insert(0, str(HERE))          # 讓 indicators / notify 可匯入
 try:

@@ -39,7 +39,8 @@ try:
 except Exception:
     pass
 
-STATE_FILE = HERE / "state.json"
+from storage import runtime_path
+STATE_FILE = runtime_path("state.json")
 POSTS_DIR = HERE / "posts"
 
 

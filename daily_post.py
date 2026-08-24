@@ -36,7 +36,8 @@ try:
 except Exception:
     pass
 
-STATE_FILE = HERE / "state.json"
+from storage import runtime_path
+STATE_FILE = runtime_path("state.json")
 POSTS_DIR = HERE / "posts"
 
 # 主題 → dashboard.html?snapshot=<query>。board 用既有 ?snapshot=1(必定可截)；

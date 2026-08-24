@@ -13,14 +13,24 @@ server.py — 數據獵手看板伺服器（純標準庫，無相依）
 from __future__ import annotations
 
 import json
+import os
 import sys
+import time
 import webbrowser
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 
+from storage import runtime_path
+
 HERE = Path(__file__).resolve().parent
 _INDICES_CACHE: dict = {}          # /api/indices 60 秒 module 快取
+_WATCHLIST_CACHE: dict = {}        # 自選股完整資料 20 秒快取
+_RUNTIME_FILES = {
+    "/state.json": runtime_path("state.json"),
+    "/history.json": runtime_path("history.json"),
+}
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -36,12 +46,94 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _read_json(self) -> dict:
+        try:
+            length = min(int(self.headers.get("Content-Length", "0")), 16384)
+        except ValueError:
+            length = 0
+        if length <= 0:
+            return {}
+        try:
+            obj = json.loads(self.rfile.read(length).decode("utf-8"))
+            return obj if isinstance(obj, dict) else {}
+        except (ValueError, UnicodeError):
+            return {}
+
+    def _watchlist_payload(self, details: bool, live: bool) -> dict:
+        import watchlist
+        items = watchlist.load()
+        if not details or not items:
+            return {"ok": True, "items": items, "count": len(items)}
+
+        key = (tuple(x["code"] for x in items), bool(live))
+        hit = _WATCHLIST_CACHE.get("value")
+        if hit and hit[0] == key and time.monotonic() - hit[1] < 20:
+            return hit[2]
+
+        import query
+        try:
+            import realtime_quote
+        except Exception:
+            realtime_quote = None
+
+        def load_one(item: dict) -> dict:
+            code = item["code"]
+            try:
+                row = query.analyze_stock(code, live=False)
+            except Exception as e:
+                row = {"ok": False, "error": f"{type(e).__name__}: {e}"}
+            if not isinstance(row, dict):
+                row = {"ok": False, "error": "無法取得分析資料"}
+            row.setdefault("code", code)
+            row.setdefault("name", item.get("name") or code)
+            row["added_at"] = item.get("added_at")
+            quote = realtime_quote.fetch_quote(code) if (live and realtime_quote) else None
+            if quote:
+                row.update({
+                    "ok": True,
+                    "name": quote.get("name") or row.get("name"),
+                    "price": quote.get("price"),
+                    "chg": quote.get("chg_pct"),
+                    "open": quote.get("open"),
+                    "high": quote.get("high"),
+                    "low": quote.get("low"),
+                    "prev_close": quote.get("prev_close"),
+                    "volume": quote.get("volume"),
+                    "quote_time": quote.get("time"),
+                    "traded": quote.get("traded"),
+                })
+            return row
+
+        rows: list[dict | None] = [None] * len(items)
+        with ThreadPoolExecutor(max_workers=min(6, len(items))) as pool:
+            jobs = {pool.submit(load_one, item): i for i, item in enumerate(items)}
+            for job in as_completed(jobs):
+                i = jobs[job]
+                try:
+                    rows[i] = job.result()
+                except Exception as e:
+                    item = items[i]
+                    rows[i] = {"ok": False, "code": item["code"], "name": item.get("name"),
+                               "error": f"{type(e).__name__}: {e}"}
+        payload = {"ok": True, "items": rows, "count": len(rows),
+                   "updated_at": time.strftime("%Y-%m-%dT%H:%M:%S")}
+        _WATCHLIST_CACHE["value"] = (key, time.monotonic(), payload)
+        return payload
+
     def _handle_api(self, path: str, qs: dict) -> bool:
         """動態 API：/api/stock、/api/search、/api/analyst。命中回 True(已回應)，否則 False(交還靜態服務)。
         query/analyst 在 handler 內 import(而非模組頂層)，讓查價/分析失敗絕不拖垮靜態看板服務。"""
         if path not in ("/api/stock", "/api/search", "/api/analyst", "/api/news",
-                        "/api/quote", "/api/indices", "/api/zones"):
+                        "/api/quote", "/api/indices", "/api/zones", "/api/watchlist"):
             return False
+        if path == "/api/watchlist":
+            details = (qs.get("details") or [""])[0].lower() in ("1", "true", "yes")
+            live = (qs.get("live") or [""])[0].lower() in ("1", "true", "yes")
+            try:
+                self._send_json(self._watchlist_payload(details, live))
+            except Exception as e:
+                self._send_json({"ok": False, "error": f"{type(e).__name__}: {e}"}, 500)
+            return True
         try:
             import query
         except Exception as e:                       # query 相依缺失 → 只影響 API，不影響看板
@@ -171,9 +263,57 @@ class Handler(SimpleHTTPRequestHandler):
         split = urlsplit(self.path)
         if self._handle_api(split.path, parse_qs(split.query)):
             return
+        runtime_file = _RUNTIME_FILES.get(split.path)
+        if runtime_file is not None:
+            if not runtime_file.exists():
+                self.send_error(404, "尚無資料")
+                return
+            try:
+                body = runtime_file.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-store, max-age=0")
+                self.end_headers()
+                self.wfile.write(body)
+            except OSError:
+                self.send_error(500, "讀取資料失敗")
+            return
         if self.path in ("/", "/index.html", ""):
             self.path = "/dashboard.html"
         return super().do_GET()
+
+    def do_POST(self):
+        split = urlsplit(self.path)
+        if split.path != "/api/watchlist":
+            self.send_error(404)
+            return
+        try:
+            import watchlist
+            obj = self._read_json()
+            items, created = watchlist.add(str(obj.get("code", "")), str(obj.get("name", "")))
+            _WATCHLIST_CACHE.clear()
+            self._send_json({"ok": True, "items": items, "count": len(items)}, 201 if created else 200)
+        except ValueError as e:
+            self._send_json({"ok": False, "error": str(e)}, 400)
+        except Exception as e:
+            self._send_json({"ok": False, "error": f"{type(e).__name__}: {e}"}, 500)
+
+    def do_DELETE(self):
+        split = urlsplit(self.path)
+        if split.path != "/api/watchlist":
+            self.send_error(404)
+            return
+        code = (parse_qs(split.query).get("code") or [""])[0]
+        try:
+            import watchlist
+            items, removed = watchlist.remove(code)
+            _WATCHLIST_CACHE.clear()
+            self._send_json({"ok": True, "removed": removed, "items": items, "count": len(items)})
+        except ValueError as e:
+            self._send_json({"ok": False, "error": str(e)}, 400)
+        except Exception as e:
+            self._send_json({"ok": False, "error": f"{type(e).__name__}: {e}"}, 500)
 
     def end_headers(self):
         # state.json 不要被快取
@@ -186,7 +326,8 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 def main():
-    port = 8899
+    port = int(os.environ.get("RADAR_PORT", "8899"))
+    host = os.environ.get("RADAR_HOST", "127.0.0.1")
     do_scan = False
     for a in sys.argv[1:]:
         if a == "--scan":
@@ -206,7 +347,7 @@ def main():
     httpd = None
     for p in range(port, port + 10):
         try:
-            httpd = ThreadingHTTPServer(("127.0.0.1", p), Handler)
+            httpd = ThreadingHTTPServer((host, p), Handler)
             port = p
             break
         except OSError:
@@ -216,11 +357,13 @@ def main():
         print(f"[server] 連續 10 個埠({port}-{port + 9})皆被占用，放棄。")
         return
 
-    url = f"http://127.0.0.1:{port}/"
+    shown_host = "127.0.0.1" if host in ("", "0.0.0.0", "::") else host
+    url = f"http://{shown_host}:{port}/"
     print(f"[server] 數據獵手看板 → {url}")
     print("[server] Ctrl+C 結束")
     try:
-        webbrowser.open(url)
+        if os.environ.get("RADAR_OPEN_BROWSER", "1").lower() not in ("0", "false", "no"):
+            webbrowser.open(url)
     except Exception:
         pass
     try:

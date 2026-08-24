@@ -173,7 +173,25 @@ python prefill_cache.py
 python app.py
 # → http://127.0.0.1:8899/
 ```
-Windows: double-click `app_launch.bat` instead.
+Windows: double-click `app_launch.bat`. macOS: double-click `app_launch.command`.
+
+The macOS launchers automatically switch to the project directory and use
+`.venv/bin/python`, `venv/bin/python`, or `python3` in that order:
+
+| macOS launcher | Purpose |
+|---|---|
+| `app_launch.command` | Recommended: refresh/scan in the background, start the main dashboard, open the browser |
+| `開啟看板.command` | Scan once, then start the main dashboard |
+| `啟動看板.command` | Start the financial analysis team dashboard on port 8900 |
+| `背景掃描.command` | Run the continuous scanner and append to `loop.log` |
+| `全市場掃描.command` | Run one full-market scan |
+| `每日自動.command` | Run the end-of-day pipeline at 17:00 on weekdays |
+
+If executable permissions were lost when downloading a ZIP, run:
+
+```bash
+chmod +x ./*.command ./scripts/macos-common.sh
+```
 
 **5. End-of-day full pipeline**
 ```bash

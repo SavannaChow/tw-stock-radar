@@ -25,7 +25,8 @@ from datetime import datetime
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ZONES_JSON = HERE / "state_zones.json"
+from storage import runtime_path
+ZONES_JSON = runtime_path("state_zones.json")
 TWDATA_ZONES = HERE / "twdata" / "zones.json"
 
 try:

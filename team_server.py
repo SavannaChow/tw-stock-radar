@@ -31,7 +31,8 @@ try:
 except Exception:
     pass
 
-STATE_FILE = HERE / "state.json"
+from storage import runtime_path
+STATE_FILE = runtime_path("state.json")
 TEAM_HTML = HERE / "team.html"
 
 # 四維分析快取（同一代號 120 秒內直接返回，不重算）

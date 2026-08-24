@@ -132,6 +132,47 @@
   .ws-x{color:var(--faint);font-size:14px;padding:0 2px;line-height:1}
   .ws-x:hover{color:var(--up)}
 
+  /* ══ 自選股獨立頁 ══ */
+  .wl-head{display:flex;align-items:flex-start;gap:18px;margin-bottom:14px}
+  .wl-title{font-family:var(--ttl);font-size:24px;font-weight:650;color:var(--txt)}
+  .wl-desc{font-size:12px;color:var(--dim);margin-top:5px;line-height:1.6}
+  .wl-actions{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+  .wl-updated{font-family:var(--mono);font-size:10px;color:var(--faint)}
+  .wl-refresh{font-family:var(--mono);font-size:11px;color:var(--acc2);border:1px solid var(--line2);
+    background:rgba(90,147,189,.08);border-radius:var(--r-sm);padding:7px 11px;cursor:pointer}
+  .wl-refresh:hover{background:rgba(90,147,189,.16)}.wl-refresh:disabled{opacity:.45;cursor:wait}
+  .wl-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:14px}
+  .wl-sum{border:1px solid var(--line);border-radius:var(--r-sm);background:rgba(255,255,255,.018);padding:10px 12px}
+  .wl-sum .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.7px;color:var(--dim)}
+  .wl-sum .v{font-family:var(--ttl);font-size:21px;font-weight:650;margin-top:3px;font-variant-numeric:tabular-nums}
+  .wl-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .wl-card{position:relative;border:1px solid var(--line2);border-radius:var(--r-md);background:rgba(255,255,255,.018);
+    padding:14px;cursor:pointer;transition:border-color .15s,background .15s,transform .15s;overflow:hidden}
+  .wl-card:hover{border-color:var(--acc);background:rgba(90,147,189,.055);transform:translateY(-1px)}
+  .wl-card.long{border-left:3px solid var(--up)}.wl-card.short{border-left:3px solid var(--dn)}
+  .wl-top{display:flex;align-items:flex-start;gap:10px;padding-right:28px}
+  .wl-code{font-family:var(--mono);font-size:12px;color:var(--acc2)}
+  .wl-name{font-size:17px;font-weight:650;margin-top:2px}.wl-ind{font-size:10px;color:var(--faint);margin-top:2px}
+  .wl-quote{margin-left:auto;text-align:right}.wl-price{font-family:var(--ttl);font-size:27px;font-weight:650;line-height:1}
+  .wl-chg{font-family:var(--mono);font-size:13px;font-weight:700;margin-top:4px}
+  .wl-remove{position:absolute;right:10px;top:10px;width:25px;height:25px;border:1px solid transparent;border-radius:6px;
+    background:transparent;color:var(--faint);font-size:16px;cursor:pointer;line-height:21px}
+  .wl-remove:hover{color:var(--up);border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.08)}
+  .wl-verdict{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:12px 0 10px;padding:8px 9px;
+    border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+  .wl-pill{font-family:var(--mono);font-size:10px;padding:3px 7px;border:1px solid var(--line2);border-radius:10px;color:var(--dim)}
+  .wl-pill.long{color:var(--up);border-color:rgba(255,77,109,.38)}.wl-pill.short{color:var(--dn);border-color:rgba(40,192,139,.38)}
+  .wl-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+  .wl-metric{min-width:0}.wl-metric .k{font-size:9.5px;color:var(--faint);white-space:nowrap}
+  .wl-metric .v{font-family:var(--mono);font-size:12px;font-weight:650;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wl-plan{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;padding-top:9px;border-top:1px solid var(--hair);
+    font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .wl-plan b{font-weight:700}.wl-empty{text-align:center;padding:52px 20px;color:var(--dim);border:1px dashed var(--line2);border-radius:var(--r-md)}
+  .wl-empty b{display:block;color:var(--txt);font-size:17px;margin-bottom:8px}.wl-error{color:var(--up);font-size:12px;margin-top:10px}
+  @media(max-width:900px){.wl-cards{grid-template-columns:1fr}.wl-summary{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:560px){.wl-head{display:block}.wl-actions{margin-top:12px;justify-content:flex-start}.wl-summary{grid-template-columns:repeat(2,1fr)}
+    .wl-metrics{grid-template-columns:repeat(2,1fr)}.wl-card{padding:12px}.wl-price{font-size:24px}}
+
   .grid{display:grid;grid-template-columns:360px 1fr;gap:14px}
   @media(max-width:880px){.grid{grid-template-columns:1fr}}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:15px 17px;
@@ -999,11 +1040,27 @@
   <!-- 主分頁 -->
   <div class="tabs">
     <div class="tab active" data-v="board">看板 · LIVE</div>
+    <div class="tab" data-v="watch">自選股 · WATCHLIST</div>
     <div class="tab" data-v="heat">板塊熱流 · FLOW MAP</div>
     <div class="tab" data-v="chips">法人資金流向 · INSTITUTIONS</div>
     <div class="tab" data-v="zones">交易專區 · TRADE ZONES</div>
     <div class="tab" data-v="track">實盤戰績 · TRACK RECORD</div>
     <div class="tab" data-v="history">歷史訊號 · TIMELINE</div>
+  </div>
+
+  <!-- ════ 自選股獨立 view ════ -->
+  <div class="view" data-view="watch">
+    <section class="panel">
+      <div class="wl-head">
+        <div><div class="wl-title">我的自選股</div>
+          <div class="wl-desc">集中檢視今日漲跌、趨勢、量價、籌碼與既有交易訊號。點卡片可開啟完整個股分析。</div></div>
+        <div class="wl-actions"><span class="wl-updated" id="watchUpdated">尚未更新</span>
+          <button class="wl-refresh" id="watchRefresh" type="button">↻ 更新即時資料</button></div>
+      </div>
+      <div class="wl-summary" id="watchSummary"></div>
+      <div class="wl-cards" id="watchCards"><div class="wl-empty" style="grid-column:1/-1"><b>尚無自選股</b>從上方搜尋個股，進入詳情後按「☆ 加入自選」。</div></div>
+      <div class="zNote">訊號與健診為數據輔助，不代表投資建議；下單前仍應自行評估風險。</div>
+    </section>
   </div>
 
   <!-- ════ 看板 view ════ -->
@@ -1658,6 +1715,7 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   if(v==='track'&&lastData)renderTrack(lastData.track);
   if(v==='chips'&&lastData)renderChips(lastData.chips);
   if(v==='zones')window.fetchZones&&window.fetchZones();
+  if(v==='watch')window.fetchWatchlistDetails&&window.fetchWatchlistDetails();
 }));
 
 // ── 歷史訊號時間軸 ──
@@ -2065,6 +2123,7 @@ async function load(){
     if(av==='heat') renderHeatmap(d.sectors);
     if(av==='track') renderTrack(d.track);
     if(av==='chips') renderChips(d.chips);
+    if(av==='watch') window.fetchWatchlistDetails&&window.fetchWatchlistDetails();
 
     // 主題單圖快照：切到目標 view、填海報標題、渲染該 view
     if(SNAP_THEMED){
@@ -2385,27 +2444,113 @@ if(SNAP){ loadHistory(); }
   function closeModal(){ modal.classList.remove('show'); mBody.innerHTML='';
     try{ (lastFocus&&lastFocus.focus)?lastFocus.focus():input.focus(); }catch(e){} }
 
-  // ══ 自選股 watchlist（localStorage）══
-  const getWatch=()=>{ try{return JSON.parse(localStorage.getItem('dh_watch')||'[]');}catch(e){return [];} };
-  const isWatched=code=>getWatch().some(w=>w.code===code);
-  function toggleWatch(code,name){
-    let w=getWatch(); const i=w.findIndex(x=>x.code===code);
-    if(i>=0) w.splice(i,1); else w.push({code,name:name||''});
-    localStorage.setItem('dh_watch',JSON.stringify(w)); renderWatchStrip();
-    const btn=document.getElementById('smStar'); if(btn){ const on=isWatched(code); btn.classList.toggle('on',on); btn.textContent=on?'★ 已加自選':'☆ 加入自選'; }
+  // ══ 自選股：伺服器持久化 + localStorage 舊資料自動遷移 ══
+  const _readLocalWatch=()=>{ try{const x=JSON.parse(localStorage.getItem('dh_watch')||'[]');return Array.isArray(x)?x:[];}catch(e){return [];} };
+  let watchItems=_readLocalWatch(), watchRows=new Map(), watchReq=0;
+  const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const getWatch=()=>watchItems.slice();
+  const saveLocalWatch=()=>localStorage.setItem('dh_watch',JSON.stringify(watchItems.map(x=>({code:x.code,name:x.name||''}))));
+  const isWatched=code=>watchItems.some(w=>w.code===code);
+
+  async function syncWatchlist(){
+    const local=_readLocalWatch();
+    try{
+      const r=await fetch('/api/watchlist',{cache:'no-store'}); if(!r.ok)throw new Error('HTTP '+r.status);
+      const j=await r.json(), remote=Array.isArray(j.items)?j.items:[];
+      const by=new Map(remote.map(x=>[x.code,x]));
+      // 舊版只存在瀏覽器：第一次啟動時合併到伺服器，不讓既有自選股消失。
+      if(localStorage.getItem('dh_watch_server_migrated')!=='1'){
+        for(const x of local){ if(!x||!x.code||by.has(x.code))continue;
+          try{ const pr=await fetch('/api/watchlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(x)});
+            if(pr.ok)by.set(x.code,x); }catch(e){} }
+        localStorage.setItem('dh_watch_server_migrated','1');
+      }
+      watchItems=[...by.values()]; saveLocalWatch();
+    }catch(e){ watchItems=local; }
+    renderWatchStrip(); renderWatchPage();
+    if(watchItems.length) fetchWatchlistDetails();
   }
-  async function renderWatchStrip(){
+
+  async function toggleWatch(code,name){
+    const i=watchItems.findIndex(x=>x.code===code), adding=i<0;
+    if(adding)watchItems.push({code,name:name||''}); else watchItems.splice(i,1);
+    saveLocalWatch(); renderWatchStrip(); renderWatchPage();
+    const btn=document.getElementById('smStar'); if(btn){ const on=isWatched(code); btn.classList.toggle('on',on); btn.textContent=on?'★ 已加自選':'☆ 加入自選'; }
+    try{
+      const opts=adding
+        ?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,name:name||''})}
+        :{method:'DELETE'};
+      const url='/api/watchlist'+(adding?'':'?code='+encodeURIComponent(code));
+      const r=await fetch(url,opts); if(!r.ok)throw new Error('HTTP '+r.status);
+      const j=await r.json(); if(Array.isArray(j.items))watchItems=j.items;
+      saveLocalWatch();
+    }catch(e){ /* 本機檔案模式仍保留 localStorage 清單 */ }
+    if(adding)fetchWatchlistDetails(); else{watchRows.delete(code);renderWatchStrip();renderWatchPage();}
+  }
+
+  function renderWatchStrip(){
     const strip=document.getElementById('watchStrip'); if(!strip) return;
-    const w=getWatch();
-    if(!w.length){ strip.style.display='none'; strip.innerHTML=''; return; }
+    if(!watchItems.length){ strip.style.display='none'; strip.innerHTML=''; return; }
     strip.style.display='';
     strip.innerHTML='<div class="ws-hd">自選股 · WATCHLIST</div><div class="ws-items">'+
-      w.map(x=>{ const d=drillMap.get(x.code);
-        const px=d?`<span class="ws-px" style="color:${dirHex(d.chg)}">${d.price} <small style="color:${chgColor(d.chg)}">${sign(d.chg)}%</small></span>`:'<span class="ws-px ws-na">—</span>';
-        return `<div class="ws-item" data-drill data-code="${x.code}"><span class="ws-nm"><b>${x.name||x.code}</b> <span class="rcode">${x.code}</span></span>${px}`+
-          `<span class="ws-x" data-unwatch="${x.code}" title="移除">×</span></div>`; }).join('')+'</div>';
+      watchItems.map(x=>{ const d=watchRows.get(x.code)||drillMap.get(x.code);
+        const px=d&&d.price!=null?`<span class="ws-px" style="color:${dirHex(d.chg)}">${d.price} <small style="color:${chgColor(d.chg)}">${d.chg!=null?sign(d.chg)+'%':'—'}</small></span>`:'<span class="ws-px ws-na">—</span>';
+        return `<div class="ws-item" data-drill data-code="${safe(x.code)}"><span class="ws-nm"><b>${safe(x.name||x.code)}</b> <span class="rcode">${safe(x.code)}</span></span>${px}`+
+          `<span class="ws-x" data-unwatch="${safe(x.code)}" title="移除">×</span></div>`; }).join('')+'</div>';
     strip.querySelectorAll('[data-unwatch]').forEach(el=>el.addEventListener('click',ev=>{ev.stopPropagation();toggleWatch(el.dataset.unwatch);}));
   }
+
+  const wlNum=(v,d=1)=>v==null||Number.isNaN(Number(v))?'—':Number(v).toFixed(d);
+  const wlInt=v=>v==null?'—':Number(v).toLocaleString('en-US');
+  function watchCard(s){
+    const side=s.side||s.signal, sideText=side==='long'?'做多訊號':side==='short'?'做空／減碼':'等待確認';
+    const st=s.st==='UP'?'多方':s.st==='DOWN'?'空方':'中性';
+    const health=s.health||{}, grade=health.grade||'—', overall=health.overall;
+    const maGap=(s.price!=null&&s.ma20)?((s.price/s.ma20-1)*100):null;
+    const plan=(s.stop!=null||s.tp1!=null)?`<div class="wl-plan"><span>停損 <b style="color:var(--dn)">${s.stop??'—'}</b></span><span>目標一 <b style="color:var(--up)">${s.tp1??'—'}</b></span><span>目標二 <b style="color:var(--up)">${s.tp2??'—'}</b></span></div>`:'';
+    const metric=(k,v,col)=>`<div class="wl-metric"><div class="k">${k}</div><div class="v"${col?` style="color:${col}"`:''}>${v}</div></div>`;
+    return `<article class="wl-card ${side||''}" data-watch-open="${safe(s.code)}">`+
+      `<button class="wl-remove" data-unwatch="${safe(s.code)}" title="移除自選股" aria-label="移除 ${safe(s.name||s.code)}">×</button>`+
+      `<div class="wl-top"><div><div class="wl-code">${safe(s.code)}</div><div class="wl-name">${safe(s.name||s.code)}</div><div class="wl-ind">${safe(s.industry||'')}</div></div>`+
+      `<div class="wl-quote"><div class="wl-price" style="color:${dirHex(s.chg)}">${s.price??'—'}</div><div class="wl-chg" style="color:${chgColor(s.chg)}">${s.chg!=null?sign(s.chg)+'%':'—'}</div></div></div>`+
+      `<div class="wl-verdict"><span class="wl-pill ${side||''}">${sideText}</span><span class="wl-pill">趨勢 ${st}</span>`+
+      `<span class="wl-pill">健診 ${grade}${overall!=null?' · '+wlNum(overall,0):''}</span><span class="wl-pill">強弱 ${s.score??'—'}</span></div>`+
+      `<div class="wl-metrics">${metric('今開',wlNum(s.open,2))}${metric('最高',wlNum(s.high,2),'var(--up)')}${metric('最低',wlNum(s.low,2),'var(--dn)')}${metric('成交量',wlInt(s.volume)+' 張')}`+
+      `${metric('RSI',wlNum(s.rsi,1),s.rsi>=70?'var(--up)':s.rsi<=30?'var(--dn)':null)}${metric('MA20乖離',maGap==null?'—':sign(Number(maGap.toFixed(1)))+'%',maGap==null?null:chgColor(maGap))}`+
+      `${metric('ADX',wlNum(s.adx,1),s.adx>=25?'var(--gold)':null)}${metric('相對量',s.relvol==null?'—':wlNum(s.relvol,1)+'x',s.relvol>=1.5?'var(--gold)':null)}`+
+      `${metric('外資',s.foreign_net==null?'—':(s.foreign_net>0?'+':'')+wlInt(s.foreign_net)+'張',s.foreign_net==null?null:chgColor(s.foreign_net))}${metric('投信',s.trust_net==null?'—':(s.trust_net>0?'+':'')+wlInt(s.trust_net)+'張',s.trust_net==null?null:chgColor(s.trust_net))}`+
+      `${metric('融資增減',s.margin_chg==null?'—':(s.margin_chg>0?'+':'')+wlInt(s.margin_chg)+'張')}${metric('本益比',wlNum(s.pe,1))}</div>${plan}`+
+      `${s.ok===false?`<div class="wl-error">${safe(s.error||'資料暫時無法取得')}</div>`:''}</article>`;
+  }
+
+  function renderWatchPage(error){
+    const cards=document.getElementById('watchCards'), sum=document.getElementById('watchSummary'); if(!cards||!sum)return;
+    const rows=watchItems.map(x=>watchRows.get(x.code)||{...x,ok:false});
+    if(!rows.length){ sum.innerHTML=''; cards.innerHTML='<div class="wl-empty" style="grid-column:1/-1"><b>尚無自選股</b>從上方搜尋個股，進入詳情後按「☆ 加入自選」。</div>';return; }
+    const valid=rows.filter(x=>x.price!=null), ups=valid.filter(x=>x.chg>0).length, downs=valid.filter(x=>x.chg<0).length;
+    const longs=valid.filter(x=>(x.side||x.signal)==='long').length, shorts=valid.filter(x=>(x.side||x.signal)==='short').length;
+    const avg=valid.length?valid.reduce((a,x)=>a+(Number(x.chg)||0),0)/valid.length:null;
+    const sbox=(k,v,col)=>`<div class="wl-sum"><div class="k">${k}</div><div class="v"${col?` style="color:${col}"`:''}>${v}</div></div>`;
+    sum.innerHTML=sbox('自選檔數',rows.length)+sbox('上漲／下跌',`${ups} / ${downs}`)+sbox('平均漲跌',avg==null?'—':sign(Number(avg.toFixed(2)))+'%',avg==null?null:chgColor(avg))+sbox('做多訊號',longs,'var(--up)')+sbox('做空訊號',shorts,'var(--dn)');
+    cards.innerHTML=rows.map(watchCard).join('')+(error?`<div class="wl-error" style="grid-column:1/-1">${safe(error)}</div>`:'');
+    cards.querySelectorAll('[data-unwatch]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();toggleWatch(el.dataset.unwatch);}));
+    cards.querySelectorAll('[data-watch-open]').forEach(el=>el.addEventListener('click',()=>pick(el.dataset.watchOpen)));
+  }
+
+  async function fetchWatchlistDetails(){
+    const seq=++watchReq, btn=document.getElementById('watchRefresh'); if(btn){btn.disabled=true;btn.textContent='更新中…';}
+    try{
+      const r=await fetch('/api/watchlist?details=1&live=1&_='+Date.now(),{cache:'no-store'}); if(!r.ok)throw new Error('HTTP '+r.status);
+      const j=await r.json(); if(seq!==watchReq)return;
+      const rows=Array.isArray(j.items)?j.items:[]; watchRows=new Map(rows.map(x=>[x.code,x]));
+      rows.forEach(x=>{if(x&&x.code)regDrill(x);});
+      if(rows.length){watchItems=rows.map(x=>({code:x.code,name:x.name||x.code,added_at:x.added_at}));saveLocalWatch();}
+      const up=document.getElementById('watchUpdated'); if(up)up.textContent='更新 '+(j.updated_at||new Date().toLocaleTimeString('zh-TW',{hour12:false}));
+      renderWatchStrip();renderWatchPage();
+    }catch(e){if(seq===watchReq)renderWatchPage('即時資料更新失敗，保留上次資料。');}
+    finally{if(seq===watchReq&&btn){btn.disabled=false;btn.textContent='↻ 更新即時資料';}}
+  }
+  document.getElementById('watchRefresh')?.addEventListener('click',fetchWatchlistDetails);
 
   // ══ 到價警示（localStorage；live 刷新時檢查，觸發推播/提示音）══
   const getAlerts=()=>{ try{return JSON.parse(localStorage.getItem('dh_alerts')||'[]');}catch(e){return [];} };
@@ -2684,7 +2829,7 @@ if(SNAP){ loadHistory(); }
 
   // 這些看板 widget 定義在本 IIFE，但主資料輪詢 render(d) 在另一個 script → 掛 window 供其呼叫
   Object.assign(window, {renderIndices, renderMStats, renderInstTop, renderRanks,
-    renderWatchStrip, checkAlerts, renderZones, fetchZones});
+    renderWatchStrip, fetchWatchlistDetails, checkAlerts, renderZones, fetchZones});
 
   // ── 四師深度分析（/api/analyst）：綜合策略卡 + 操作區間卡 + 四師卡×4 ──────────
   const TEAM_COLORS={'朱家泓':'var(--acc)','阿斯匹靈':'var(--gold)','權證小哥':'var(--up)','張捷':'var(--dn)'};
@@ -2956,9 +3101,10 @@ if(SNAP){ loadHistory(); }
   modal.addEventListener('click',e=>{ if(e.target===modal) closeModal(); });
   document.addEventListener('keydown',e=>{
     if(e.key!=='Escape') return;
-    if(modal.classList.contains('show')) closeModal();
-    else if(drop.classList.contains('show')) hideDrop();
+      if(modal.classList.contains('show')) closeModal();
+      else if(drop.classList.contains('show')) hideDrop();
   });
+  syncWatchlist();
 })();
 </script>
 </body>

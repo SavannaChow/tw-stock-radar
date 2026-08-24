@@ -41,7 +41,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-CHIPS_DIR = HERE / "chips"             # 每交易日一檔 JSON(本地快取)
+CHIPS_DIR = HERE / "twdata" / "chips"  # 每交易日一檔 JSON(本地快取；Docker volume 可持久化)
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")

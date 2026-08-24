@@ -1,0 +1,19 @@
+services:
+  tw-stock-radar:
+    build: .
+    restart: unless-stopped
+    init: true
+    ports:
+      - "8899:8899"
+    env_file:
+      - .env
+    environment:
+      TZ: Asia/Taipei
+      RADAR_HOST: 0.0.0.0
+      RADAR_PORT: 8899
+      RADAR_OPEN_BROWSER: "0"
+      RADAR_DATA_DIR: /app/data
+    volumes:
+      - ./docker-data/cache:/app/cache
+      - ./docker-data/twdata:/app/twdata
+      - ./docker-data/runtime:/app/data

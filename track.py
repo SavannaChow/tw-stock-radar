@@ -27,8 +27,9 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 import scan   # 重用 _read_cache / _atomic_write_json / HERE
+from storage import runtime_path
 
-BOOK_FILE = HERE / "signals_book.json"
+BOOK_FILE = runtime_path("signals_book.json")
 TIME_STOP_BARS = 15        # 滿 15 個交易日未觸停損停利 → time-stop 結算
 RECENT_N = 10              # state["track"].recent 最多筆數
 

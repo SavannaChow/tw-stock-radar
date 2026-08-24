@@ -10,7 +10,8 @@
 
 每輪掃描：抓台股日線（yfinance 即時優先／退 `twdata/cache`）→ 每檔算 RSI/MA/SuperTrend/MACD/ADX/%B/ATR → **強弱分 0–100（正交四維：趨勢/位置/動能/波動）** → 合併**三大法人+融資券+當沖+集保**籌碼 → 聚合成看板 → 偵測做多做空訊號（附 ATR 停損+tp1/tp2）→ 寫 `state.json` → 新訊號推 ntfy（收盤確認、當日去重）。
 
-**看板五分頁（深色鋼鐵人 HUD）**
+**主要分頁（深色鋼鐵人 HUD）**
+- **自選股**：伺服器持久化清單、今日即時價與漲跌、開高低量、技術趨勢、健診、籌碼與停損停利摘要
 - **看板**：市場溫度 gauge（多成分：RSI+站上20MA+漲跌家數+新高新低+量能）、three.js 溫度反應爐、產業板塊熱流、強弱榜、做多做空訊號卡（附停損停利）、做多空白用觀察名單填、JARVIS 逐字播報、漲跌家數紅綠廣度條、大盤總閘徽章
 - **板塊熱流**：資金流向 treemap（面積=家數、紅漲綠跌）
 - **法人資金流向**：外資/投信買超榜 + 連買榜 + 融資融券/當沖熱榜 + 集保散戶流出（主力吸籌）榜
@@ -30,7 +31,7 @@
 - **四維籌碼**：三大法人/融資券/當沖/集保
 - **四師手把手教學**：朱家泓/阿斯匹靈/權證小哥/張捷 四維度深度判讀 + 綜合操作區間（買在哪賣在哪停損目標風報比）+ 逐步操作
 - **個股新聞**（Google News RSS）
-- 頂部 **★自選股 + 到價提醒**（漲抵/跌破，localStorage，盤中刷新推播）
+- 頂部 **★自選股 + 到價提醒**（自選股由伺服器持久化、舊 localStorage 自動遷移；漲抵/跌破提醒仍存在目前瀏覽器）
 
 > 做不到（誠實）：即時逐筆真 tick（MIS 是~20秒快照）、券商分點（TWSE 分點報表有 captcha）——需付費行情源。
 
@@ -45,13 +46,52 @@ python prefill_cache.py               # 首次只跑一次，約 20 分鐘
 python app.py                         # → http://127.0.0.1:8899/
 ```
 
-Windows 直接雙擊 `app_launch.bat` 也可以。
+Windows 可直接雙擊 `app_launch.bat`；macOS 可直接雙擊 `app_launch.command`。
+
+### macOS 雙擊啟動
+
+macOS 版會自動切到專案目錄，並依序尋找 `.venv/bin/python`、`venv/bin/python`、`python3`，不受 Finder 啟動時工作目錄影響。
+
+| macOS 檔案 | 用途 |
+|---|---|
+| `app_launch.command` | 推薦：背景刷新與掃描、啟動主看板、自動開瀏覽器 |
+| `開啟看板.command` | 先掃一輪，再啟動主看板 |
+| `啟動看板.command` | 啟動金融分析團隊看板（8900） |
+| `背景掃描.command` | 常駐掃描並同步寫入 `loop.log` |
+| `全市場掃描.command` | 單次掃描約 1,900 檔股票 |
+| `每日自動.command` | 每個交易日 17:00 執行完整盤後流程 |
+
+如果是下載 ZIP 而不是用 Git clone，且 macOS 顯示檔案不可執行，先在 Terminal 執行一次：
+
+```bash
+cd /你的路徑/tw-stock-radar
+chmod +x ./*.command ./scripts/macos-common.sh
+```
+
+## Synology Docker／Container Manager
+
+專案已附 `Dockerfile` 與 `docker-compose.yml`。在 Synology Container Manager 建立 Project、選取此資料夾後啟動，或在 SSH 中執行：
+
+```bash
+cp .env.example .env   # 尚未建立時；API key 都可留空
+docker compose up -d --build
+```
+
+手機連到同一網路後開啟 `http://NAS_IP:8899/`。若需從外網查看，建議使用 Synology Reverse Proxy 配合 HTTPS 與登入保護，不要直接把 8899 連接埠暴露到公網。
+
+Compose 會把資料放在以下目錄，因此 rebuild／重新建立 container 不會清掉自選股或已抓行情：
+
+- `docker-data/runtime/`：自選股、最新看板狀態、訊號紀錄
+- `docker-data/cache/`：個股日線快取
+- `docker-data/twdata/`：籌碼、基本面、新聞等網路資料快取
+
+容器啟動後會立即提供看板，背景程序每天自動刷新網路資料並重算。第一次完全沒有快取時，完整市場資料需要一段時間；之後 rebuild 會沿用上述快取，只補最新資料。
 
 ## 怎麼用
 
 | 想做的事 | 指令 / 雙擊 |
 |---|---|
-| **桌面 app 一鍵開（推薦）** | `app_launch.bat` |
+| **桌面 app 一鍵開（推薦）** | Windows：`app_launch.bat`／macOS：`app_launch.command` |
 | **盤後一鍵全跑**（刷快取→籌碼→掃描） | `python eod.py` |
 | 開即時看板（不含背景掃描） | `python server.py` |
 | 掃全市場 ~1900 檔 | `python scan.py --full` |
@@ -96,10 +136,11 @@ data_hunter/
 ├─ track.py        訊號命中率回灌(事後評估真實勝率/R)
 ├─ daily_post.py   一鍵今日貼文(模板文案+主題海報，免LLM)
 ├─ eod.py          盤後一鍵管線(刷快取→籌碼→基本面預抓→掃描→貼文)
-├─ loop.py/app.py/server.py   背景迴圈 / 桌面app / 看板伺服器(/api/stock,analyst,news,quote)
-├─ dashboard.html  機構級金融終端看板(5分頁+個股深度頁+主題快照)
+├─ loop.py/app.py/server.py   背景迴圈 / 桌面app / 看板伺服器(/api/stock,analyst,news,quote,watchlist)
+├─ watchlist.py/storage.py    自選股持久化 / Docker 可配置執行資料目錄
+├─ dashboard.html  機構級金融終端看板(自選股獨立頁+個股深度頁+主題快照)
 ├─ tests/          ~100個單元測試(標準庫unittest、零依賴、不連網)
-└─ *.bat           開啟看板 / 背景掃描 / 全市場掃描 / app_launch
+└─ *.bat / *.command   Windows / macOS 雙擊啟動器
 ```
 執行期產物（state.json/history.json/signals_book.json/posts/、twdata/{cache,chips,margin,tdcc,fundamentals,news}/、calibrate_result.md）皆 gitignore。
 
