@@ -225,8 +225,10 @@
   .guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.guide-card{border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 14px;background:rgba(255,255,255,.018);min-width:0;cursor:pointer;transition:border-color .15s,background .15s,transform .15s}.guide-card:hover{border-color:var(--line2);background:rgba(90,147,189,.035);transform:translateY(-1px)}.guide-card:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}.guide-card::after{content:'點開詳解  →';display:block;margin-top:9px;font-family:var(--mono);font-size:10.5px;color:var(--acc2);opacity:.76}
   .guide-card-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}.guide-card-h b{font-size:15px}.guide-code{font-family:var(--mono);font-size:10.5px;color:var(--acc2);border:1px solid rgba(90,147,189,.25);border-radius:8px;padding:2px 6px;margin-left:auto;white-space:nowrap}.guide-card p{font-size:12.5px;line-height:1.6;color:var(--dim);margin-top:5px}.guide-card p b{color:var(--txt);font-weight:600}.guide-read{margin-top:9px;border-left:2px solid var(--acc);padding:6px 8px;background:rgba(90,147,189,.055);font-family:var(--mono);font-size:11.5px;line-height:1.55;color:var(--txt)}.guide-risk{color:#c8a86b!important}.guide-foot{margin-top:18px;border:1px solid rgba(198,154,76,.25);border-radius:var(--r-sm);padding:12px 14px;background:rgba(198,154,76,.045);font-size:13px;line-height:1.65;color:var(--dim)}.guide-foot b{color:var(--gold)}
   .guide-modal{position:fixed;inset:0;z-index:97;display:none;align-items:flex-start;justify-content:center;padding:46px 16px;background:rgba(3,7,14,.78);backdrop-filter:blur(5px);overflow-y:auto}.guide-modal.show{display:flex;animation:smfade .18s ease}.guide-dialog{position:relative;width:100%;max-width:760px;background:var(--panel);border:1px solid var(--line2);border-radius:15px;padding:23px;box-shadow:var(--bevel),var(--depth)}.guide-modal-close{position:absolute;right:14px;top:12px;width:34px;height:34px;border:1px solid var(--line2);border-radius:9px;background:rgba(255,255,255,.025);color:var(--dim);font-size:22px;cursor:pointer}.guide-modal-close:hover{color:var(--txt);border-color:var(--acc)}.guide-modal-kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px;color:var(--acc2)}.guide-modal-title{font-family:var(--ttl);font-size:25px;font-weight:680;margin-top:4px;padding-right:42px}.guide-modal-summary{font-size:14px;line-height:1.7;color:var(--dim);margin-top:7px}.guide-modal-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.guide-importance{border:1px solid rgba(90,147,189,.35);border-radius:999px;padding:5px 9px;font-size:11.5px;color:var(--acc2)}.guide-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}.guide-detail-block{border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 13px;background:rgba(255,255,255,.018)}.guide-detail-block h4{font-size:13px;color:var(--txt);margin-bottom:5px}.guide-detail-block p{font-size:12.5px;line-height:1.65;color:var(--dim)}.guide-detail-block.decision{grid-column:1/-1;border-color:rgba(198,154,76,.28);background:rgba(198,154,76,.045)}.guide-detail-block.decision h4{color:var(--gold)}.guide-modal-note{font-size:11.5px;color:var(--faint);line-height:1.55;margin-top:12px}
+  .guide-detail-block.naming{grid-column:1/-1;border-color:rgba(90,147,189,.3);background:rgba(90,147,189,.055)}.guide-detail-block.naming h4{color:var(--acc2)}
   @media(max-width:980px){.guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.guide-order{grid-template-columns:repeat(3,minmax(0,1fr))}}
   @media(max-width:620px){.guide-head{display:block}.guide-basics,.guide-grid{grid-template-columns:1fr}.guide-order{grid-template-columns:repeat(2,minmax(0,1fr))}.guide-title{font-size:23px}.guide-card{padding:13px}.guide-section-h{display:block}.guide-section-h span{display:block;margin-top:2px}.guide-modal{padding:22px 10px}.guide-dialog{padding:19px 15px}.guide-modal-title{font-size:22px}.guide-detail-grid{grid-template-columns:1fr}.guide-detail-block.decision{grid-column:auto}}
+  @media(max-width:620px){.guide-detail-block.naming{grid-column:auto}}
 
   .grid{display:grid;grid-template-columns:360px 1fr;gap:14px}
   @media(max-width:880px){.grid{grid-template-columns:1fr}}
@@ -3399,6 +3401,30 @@ if(SNAP){ loadHistory(); }
     '停損／目標一／目標二':{code:'RISK PLAN',importance:'重要性：交易前必看的核心計畫',summary:'先定義判斷錯誤時在哪裡退出，再設定可能分批實現報酬的位置。',principle:'本看板依訊號方向與 ATR 推估距離，使高波動股票有較寬空間、低波動股票較窄。',signals:'若進場價離停損太遠，代表風險過大；目標距離若不足以補償停損與交易成本，這筆交易不值得做。',basis:'先用可承受損失反推股數，再看目標一、二；價格結構改變時應重新評估，而非機械死守。',decision:'它不預測一定到價，但能直接判斷交易是否符合你的風險上限。沒有合理停損就不應進場。',risk:'跳空、跌停與流動性不足會讓實際成交差於停損價；擴大停損或攤平會破壞原本風控。'}
   };
 
+  const NAMING={
+    '股價／漲跌幅':'股價是市場最近一筆成交的價格；漲跌幅是 Change Percentage（價格變動百分比），以目前價和前一交易日收盤價相比。「幅」指變動的幅度，不是在說股票本身昂貴或便宜。',
+    '今開／最高／最低':'它們屬於 OHLC 價格資料。OHLC 是 Open、High、Low、Close 的縮寫，分別是開盤、最高、最低、收盤；卡片盤中先顯示前三者，收盤價則由目前／最終成交價補上。',
+    '成交量':'英文是 Trading Volume，Volume 原意是「量」。台股常以「張」顯示，一張通常是 1,000 股；它量的是成交多少，不是買方比賣方多多少，因為每筆成交必然同時有買方與賣方。',
+    '相對量':'英文常寫 Relative Volume，縮寫 RELVOL 或 RVOL。Relative 是「相對於某個基準」：這裡把今天的量和近期平均量相比，因此 2x 的意思是約為平常的兩倍。',
+    '平均成交金額／買賣價差':'兩者合稱流動性（Liquidity）觀察。成交金額是價格乘成交量；買賣價差是 Bid-Ask Spread，Bid 是目前最高買價、Ask 是目前最低賣價，Spread 就是兩者之間的距離。',
+    'RSI':'RSI 全名 Relative Strength Index，中文是相對強弱指標。Relative 在這裡是比較「同一股票近期平均上漲力道和下跌力道」，不是拿這支股票跟另一支股票比；Index 表示換算成 0–100 的指數。',
+    'MA20 乖離':'MA 是 Moving Average（移動平均線），20 表示最近 20 個交易日，約等於一個月。乖離英文常稱 Deviation 或 Distance，意思是目前股價「偏離」這條平均成本線多少。',
+    'ADX':'ADX 全名 Average Directional Index，中文常譯平均趨向指標。Directional 指價格移動是否持續朝某個方向，Average 是把一段期間平滑，Index 是換算後的強度指數；名稱裡沒有 Up 或 Down，所以它本身不判斷漲跌方向。',
+    '趨勢 多方／空方':'卡片方向主要來自 SuperTrend（超級趨勢）類型指標。SuperTrend 不是「一定很準的超級預測」，而是用價格和 ATR 畫出的趨勢跟隨線；多方／空方是本看板把線上、線下狀態翻成容易閱讀的方向標籤。',
+    '強弱分':'這是本看板的自訂綜合分數，不是交易所或學術界統一的標準指標。「強弱」指近期技術條件的相對強弱，包括趨勢、動能、價格位置與波動；不代表公司體質、便宜程度或未來漲幅。',
+    '季線／距年高／月線 ATR':'季線是市場俗稱，通常指約 60 個交易日的移動平均，接近一季交易時間；距年高是離近 52 週最高價的距離；月線 ATR 則把股價離 MA20 的距離換算成幾個 ATR，三者是本看板組合出的追價風險摘要。',
+    '外資／投信':'外資是境外機構投資人，投信是本地證券投資信託基金；兩者都被交易所歸在「三大法人」統計中。卡片顯示的 Net Buy/Sell 是淨買賣超，也就是買進張數減去賣出張數。',
+    '融資增減':'Margin Trading 是信用交易，台股語境中的融資主要指投資人向券商借資金買股。增減是今日融資餘額相對前一日的變化，不是公司向銀行融資，也不是當日所有散戶買賣量。',
+    '近 10 日法人籌碼':'「籌碼」是台股慣用語，指股票目前較集中在什麼類型的持有人手中及資金進出方向。這不是國際上單一公式的 Chip 指標；本卡片特指外資加投信近 10 個交易日淨買賣超的累計摘要。',
+    '本益比':'本益比英文是 Price-to-Earnings Ratio，縮寫 P/E 或 PER。Price 是每股股價，Earnings 是每股盈餘 EPS；所以它的名稱就是「價格相對獲利的倍數」。',
+    'EPS／營收 YoY':'EPS 全名 Earnings Per Share，中文是每股盈餘；YoY 全名 Year over Year，意思是和去年同一期間相比。營收 YoY 因此是本期營收相對去年同期的年增減率，不是和上個月相比。',
+    'ATR 波動率':'ATR 全名 Average True Range，中文常譯平均真實波幅。True Range 的「真實」是因為它不只看當日最高減最低，也把前收造成的跳空納入；本看板再除以股價成為 ATR 百分比。',
+    '60／120 日回撤':'回撤英文是 Drawdown，字面就是資產價值從高點「往下拉回」。60／120 日是觀察窗口；它記錄窗口內從先前高點到後續低點最深的跌幅，不等同於從窗口第一天算到今天的報酬。',
+    '健診等級':'「健診」是本看板為方便初學者使用的摘要名稱，A–E 也是本看板自訂分級，不是信用評等、券商評級或交易所認證。它描述多類資料目前呈現的整體狀態與完整度。',
+    '做多／做空／等待確認':'Long（做多）是預期上漲而建立受益部位；Short（做空）是預期下跌或用來減碼避險；等待確認是本看板在條件未同向時的中性標籤。它們描述訊號方向，不是已替你送出的交易指令。',
+    '停損／目標一／目標二':'停損英文 Stop Loss，是事先限制錯誤交易損失的退出點；目標價常稱 Profit Target。目標一、二代表分段規劃，而不是模型保證會到達的兩個價格。'
+  };
+
   const modal=document.getElementById('guideModal'), closeBtn=document.getElementById('guideModalClose');
   const titleEl=document.getElementById('guideModalTitle'), codeEl=document.getElementById('guideModalCode');
   const summaryEl=document.getElementById('guideModalSummary'), importanceEl=document.getElementById('guideModalImportance');
@@ -3413,7 +3439,8 @@ if(SNAP){ loadHistory(); }
   function openGuide(card){
     const name=card.querySelector('.guide-card-h b')?.textContent.trim(),d=DETAILS[name];if(!d)return;
     returnFocus=card;titleEl.textContent=name;codeEl.textContent=d.code;summaryEl.textContent=d.summary;importanceEl.textContent=d.importance;
-    bodyEl.replaceChildren(block('怎麼運作',d.principle),block('常見現象',d.signals),block('判斷依據',d.basis),block('主要風險',d.risk),block('能否據此買賣？',d.decision,true));
+    const naming=block('名稱、原文與由來',NAMING[name]||'這是本看板依資料用途整理的名稱。');naming.classList.add('naming');
+    bodyEl.replaceChildren(naming,block('怎麼運作',d.principle),block('常見現象',d.signals),block('判斷依據',d.basis),block('主要風險',d.risk),block('能否據此買賣？',d.decision,true));
     modal.classList.add('show');closeBtn.focus();
   }
   function closeGuide(){modal.classList.remove('show');if(returnFocus){returnFocus.focus();returnFocus=null;}}
