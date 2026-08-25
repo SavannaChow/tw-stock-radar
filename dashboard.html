@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>量化阿森 · 台股數據獵手</title>
+<script>
+  // 在首屏繪製前套用上次選擇，避免淺色使用者先看到深色閃屏。
+  try{document.documentElement.dataset.theme=localStorage.getItem('dh_theme')==='light'?'light':'dark';}
+  catch(e){document.documentElement.dataset.theme='dark';}
+</script>
 <!-- 專業金融終端字體：IBM Plex Sans(標題/數字) / IBM Plex Mono(等寬 tabular) / Noto Sans TC(中文) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,6 +32,19 @@
     --hair:rgba(120,160,220,.14); /* 統一分隔細線 */
     /* SVG 雜訊紋理（玻璃面上一層細顆粒，暗色才高級） */
     --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    color-scheme:dark;
+  }
+  :root[data-theme="light"]{
+    --bg:#eef3f8;--bg2:#f7f9fc;--panel:#ffffff;
+    --line:rgba(42,61,84,.14);--line2:rgba(42,61,84,.24);
+    --txt:#1c2939;--dim:#5d6b7e;--faint:#7a8798;
+    --acc:#3277a7;--acc2:#23658f;--gold:#946b1e;
+    --up:#cf304a;--dn:#157a59;
+    --depth:0 8px 22px rgba(31,48,69,.12),0 2px 6px rgba(31,48,69,.08);
+    --bevel:inset 0 1px 0 rgba(255,255,255,.9),inset 0 0 0 1px rgba(50,80,110,.025);
+    --well:inset 0 1px 2px rgba(31,48,69,.08),inset 0 0 0 1px rgba(50,80,110,.06);
+    --hair:rgba(42,61,84,.16);
+    color-scheme:light;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
@@ -1029,6 +1047,46 @@
   .team-view:hover{transform:translateY(-1px);border-color:var(--line2)}
   /* details 摺疊內容平滑展開 */
   .tv-notes[open] .tv-notes-body{animation:cardIn .2s ease both}
+
+  /* ════ 淺色主題：所有深色井、互動面與浮層都提供明確對應色 ════ */
+  html[data-theme="light"] body{
+    background:
+      linear-gradient(rgba(54,83,112,.045) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(54,83,112,.035) 1px,transparent 1px),
+      var(--bg);
+  }
+  html[data-theme="light"] #vig{display:none}
+  html[data-theme="light"] body.snap,
+  html[data-theme="light"] body.snap-chips,
+  html[data-theme="light"] body.snap-track,
+  html[data-theme="light"] body.snap-flow{background:radial-gradient(1000px 1200px at 50% -8%,#dce9f4 0%,var(--bg) 64%) fixed,var(--bg)}
+
+  html[data-theme="light"] :is(.idx,.tab,.ws-item,.wl-sum,.wl-card,.wl-risk-cat,.guide-basic,.guide-card,
+    .guide-detail-block,.tk,.sigcard,.wrow,.jbar,.trackList .th,.trkrow:nth-child(even),.chipBoard,
+    .chiprow:nth-child(odd),.mghead,.mgrow:nth-child(even),.rthead,.rtrow:nth-child(even),.search,
+    .smClose,.smNote,.sm-act,.hz,.team-view,.strat-card,.opzone-hd,.pb-price,.tog,
+    .wl-group-tab,.wl-group-action,.wl-manage-row,.wl-group-close,.wl-group-new button,.wl-manage-row button){
+    background-color:rgba(37,76,111,.035);
+  }
+  html[data-theme="light"] :is(.tab:hover,.ws-item:hover,.wl-card:hover,.guide-card:hover,.row:hover,.wrow:hover,
+    .chiprow:hover,.mgrow:hover,.rtrow:hover,.acItem:hover,.acItem.act,.news-item:hover,.smStat.term-help:hover,
+    .smChips .prow.term-help:hover,.team-view:hover){background-color:rgba(50,119,167,.085)}
+  html[data-theme="light"] :is(.tab.active,.rkTab.on,.zTab.on,.smKtab.on,.wl-group-tab.on,.tog.on){background-color:rgba(50,119,167,.12)}
+
+  html[data-theme="light"] :is(.well,.wl-groupbar,.wl-risk,.guide-step,.mstat,.zplay-row td,.hz-cell,
+    .smKwrap,.fv-intra,.fv-body,.smStat,.team-zone,.opzone,.opz-cell){background:#f4f7fa}
+  html[data-theme="light"] :is(.wl-group-new input,.wl-manage-name,.sm-alert input){background:#fff;color:var(--txt)}
+  html[data-theme="light"] :is(#pop,.acDrop){background:rgba(255,255,255,.99)}
+  html[data-theme="light"] :is(.wl-group-modal,.guide-modal,.stkModal,.term-help-modal){background:rgba(35,49,65,.38)}
+  html[data-theme="light"] :is(.chipBoardHdr,.marginHdr){background:linear-gradient(160deg,#edf4fa,#f8fafc)}
+  html[data-theme="light"] :is(.segbar i,.sbar,.zbar-wrap,.zdt-cell,.zlt-cell,.fv-bar,.sd-sbar){background:rgba(47,73,99,.10)}
+  html[data-theme="light"] :is(.hsort,.sector-drill){background:#f7f9fb;border-color:var(--line2)}
+  html[data-theme="light"] .tm-sigbadge.score{background:rgba(255,255,255,.78);color:#26384b}
+  html[data-theme="light"] .zbar-cur{background:#233447;box-shadow:0 0 4px rgba(255,255,255,.8)}
+  html[data-theme="light"] .opzone-bar .oz-cur{background:#233447}
+  html[data-theme="light"] :is(.pb-step,.tv-teach-step,.sd-table th,.sd-table td,.trkrow,.chiprow,.mgrow,.rtrow,.tlrow){border-color:var(--line)}
+  html[data-theme="light"] select{color-scheme:light}
+
   /* 尊重系統減量動效偏好：關掉氛圍循環動畫與進場動畫 */
   @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
@@ -1064,8 +1122,9 @@
       <div class="acDrop" id="acDrop" role="listbox" aria-label="個股查詢結果"></div>
     </div>
     <div class="spacer"></div>
-    <!-- 提示音 / 桌面通知開關（狀態存 localStorage） -->
+    <!-- 主題 / 提示音 / 桌面通知開關（狀態存 localStorage） -->
     <div class="togs">
+      <button class="tog" id="togTheme" type="button" title="切換淺色主題" aria-label="切換淺色主題">☀</button>
       <button class="tog" id="togSound" title="新訊號提示音 開/關">🔔</button>
       <button class="tog" id="togNotify" title="桌面通知 開/關">🖥</button>
     </div>
@@ -1580,11 +1639,12 @@ const gc=$('#gauge'), gx=gc.getContext('2d'); let gShown=0;
 function gaugeHue(t){ return t>=70?'#c46a63':(t>=55?'#c0965a':(t>=45?'#8a97ab':(t>=30?'#5f8399':'#4d7a94'))); }
 function drawGauge(val,color){
   const w=gc.width,h=gc.height,cx=w/2,cy=h-30,R=w/2-40;
+  const light=document.documentElement.dataset.theme==='light';
   gx.clearRect(0,0,w,h); gx.lineCap='butt';
   const v=Math.max(0,Math.min(100,val));
   // 底軌（中性深色）
   gx.beginPath();gx.arc(cx,cy,R,Math.PI,2*Math.PI);gx.lineWidth=20;
-  gx.strokeStyle='rgba(140,160,190,.1)';gx.stroke();
+  gx.strokeStyle=light?'rgba(42,61,84,.14)':'rgba(140,160,190,.1)';gx.stroke();
   // 冷→暖三階刻度分段（低飽和專業色，非霓虹彩虹）
   const segs=[[0,40,'#3f6f8c'],[40,60,'#6a7686'],[60,100,'#b05a5a']];
   for(const [a,b,col] of segs){
@@ -1600,10 +1660,10 @@ function drawGauge(val,color){
   const nx=cx+Math.cos(ang)*(R+4), ny=cy+Math.sin(ang)*(R+4);
   const ix=cx+Math.cos(ang)*(R-14), iy=cy+Math.sin(ang)*(R-14);
   gx.beginPath();gx.moveTo(ix,iy);gx.lineTo(nx,ny);gx.lineWidth=2.5;
-  gx.strokeStyle='#d3dae6';gx.stroke();
-  gx.beginPath();gx.arc(cx,cy,5,0,7);gx.fillStyle='#d3dae6';gx.fill();
+  gx.strokeStyle=light?'#34465a':'#d3dae6';gx.stroke();
+  gx.beginPath();gx.arc(cx,cy,5,0,7);gx.fillStyle=light?'#34465a':'#d3dae6';gx.fill();
   // 端點刻度數
-  gx.fillStyle='rgba(138,151,171,.75)';gx.font='12px "IBM Plex Mono",monospace';
+  gx.fillStyle=light?'rgba(64,82,103,.82)':'rgba(138,151,171,.75)';gx.font='12px "IBM Plex Mono",monospace';
   gx.fillText('0',cx-R-4,cy+6); gx.fillText('100',cx+R-14,cy+6); gx.fillText('50',cx-7,cy-R-6);
 }
 function animateGauge(target,color){
@@ -1916,6 +1976,26 @@ async function loadHistory(force){
     histLoaded=true;
   }catch(e){ $('#timeline').innerHTML='<div class="empty">讀取 history.json 失敗（後端尚未產出？）</div>'; }
 }
+
+// ── 深／淺色主題（開關存 localStorage） ──
+const themeButton=$('#togTheme');
+function currentTheme(){return document.documentElement.dataset.theme==='light'?'light':'dark';}
+function paintThemeToggle(){
+  const light=currentTheme()==='light';
+  themeButton.textContent=light?'☾':'☀';
+  themeButton.classList.toggle('on',light);
+  themeButton.title=light?'切換深色主題':'切換淺色主題';
+  themeButton.setAttribute('aria-label',themeButton.title);
+  themeButton.setAttribute('aria-pressed',light?'true':'false');
+}
+themeButton.addEventListener('click',()=>{
+  const next=currentTheme()==='light'?'dark':'light';
+  document.documentElement.dataset.theme=next;
+  localStorage.setItem('dh_theme',next);
+  paintThemeToggle();
+  drawGauge(gShown,gaugeHue(gShown));
+});
+paintThemeToggle();
 
 // ── #3 提示音 + 桌面通知（開關存 localStorage） ──
 let soundOn=localStorage.getItem('dh_sound')!=='0';   // 預設開
