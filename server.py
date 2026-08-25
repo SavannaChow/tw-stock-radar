@@ -271,7 +271,9 @@ class Handler(SimpleHTTPRequestHandler):
         runtime_file = _RUNTIME_FILES.get(split.path)
         if runtime_file is not None:
             if not runtime_file.exists():
-                self.send_error(404, "尚無資料")
+                # HTTP status reason 只能用 Latin-1；中文放 UTF-8 JSON body，否則
+                # Python 3.14 會在 state.json 尚未產生時拋 UnicodeEncodeError。
+                self._send_json({"ok": False, "error": "尚無資料"}, 404)
                 return
             try:
                 body = runtime_file.read_bytes()
@@ -282,7 +284,7 @@ class Handler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(body)
             except OSError:
-                self.send_error(500, "讀取資料失敗")
+                self._send_json({"ok": False, "error": "讀取資料失敗"}, 500)
             return
         if self.path in ("/", "/index.html", ""):
             self.path = "/dashboard.html"
