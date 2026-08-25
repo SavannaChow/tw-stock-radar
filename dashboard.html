@@ -872,7 +872,7 @@
   .smChips .prow b{font-weight:400;color:var(--txt)}
   .smChips .tag{font-size:11px;padding:1px 7px;border-radius:5px;border:1px solid currentColor}
   .smStat.term-help,.smChips .prow.term-help{cursor:help;transition:border-color .15s,background .15s}.smStat.term-help:hover,.smChips .prow.term-help:hover{border-color:var(--acc);background:rgba(90,147,189,.055)}.smStat.term-help:focus-visible,.smChips .prow.term-help:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}.smStat.term-help .k::after,.smChips .prow.term-help>span:first-child::after{content:' ?';font-family:var(--mono);font-size:9px;color:var(--acc2);opacity:.82}
-  .term-help-modal{position:fixed;inset:0;z-index:99;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(3,7,14,.74);backdrop-filter:blur(4px)}.term-help-modal.show{display:flex;animation:smfade .16s ease}.term-help-dialog{position:relative;width:100%;max-width:420px;border:1px solid var(--line2);border-radius:13px;padding:19px 20px;background:var(--panel);box-shadow:var(--bevel),var(--depth)}.term-help-close{position:absolute;right:11px;top:10px;width:30px;height:30px;border:1px solid var(--line2);border-radius:8px;background:rgba(255,255,255,.025);color:var(--dim);font-size:19px;cursor:pointer}.term-help-close:hover{color:var(--txt);border-color:var(--acc)}.term-help-kicker{font-family:var(--mono);font-size:10px;letter-spacing:1.2px;color:var(--acc2)}.term-help-title{font-family:var(--ttl);font-size:21px;font-weight:650;margin-top:5px;padding-right:34px}.term-help-text{font-size:13.5px;line-height:1.75;color:var(--dim);margin-top:9px}.term-help-note{font-size:10.5px;line-height:1.5;color:var(--faint);margin-top:11px;padding-top:9px;border-top:1px solid var(--hair)}
+  .term-help-modal{position:fixed;inset:0;z-index:99;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(3,7,14,.74);backdrop-filter:blur(4px)}.term-help-modal.show{display:flex;animation:smfade .16s ease}.term-help-dialog{position:relative;width:100%;max-width:420px;border:1px solid var(--line2);border-radius:13px;padding:19px 20px;background:var(--panel);box-shadow:var(--bevel),var(--depth)}.term-help-close{position:absolute;right:11px;top:10px;width:30px;height:30px;border:1px solid var(--line2);border-radius:8px;background:rgba(255,255,255,.025);color:var(--dim);font-size:19px;cursor:pointer}.term-help-close:hover{color:var(--txt);border-color:var(--acc)}.term-help-kicker{font-family:var(--mono);font-size:10px;letter-spacing:1.2px;color:var(--acc2)}.term-help-title{font-family:var(--ttl);font-size:21px;font-weight:650;margin-top:5px;padding-right:34px}.term-help-text{font-size:13.5px;line-height:1.75;color:var(--dim);margin-top:9px}.term-help-range{font-family:var(--mono);font-size:11.5px;line-height:1.7;color:var(--txt);margin-top:11px;padding:9px 10px;border-left:2px solid var(--acc);background:rgba(90,147,189,.06);border-radius:0 6px 6px 0}.term-help-range b{display:block;font-family:var(--tc);font-size:12px;color:var(--acc2);margin-bottom:3px}
   @media(max-width:480px){
     .smCard{padding:17px 15px 18px}
     .smHead .sm-name{font-size:19px}
@@ -1442,7 +1442,7 @@
     <div class="term-help-kicker">術語快速解釋 · QUICK GUIDE</div>
     <h3 id="termHelpTitle" class="term-help-title">術語</h3>
     <div id="termHelpText" class="term-help-text"></div>
-    <div class="term-help-note">僅說明這個術語的核心用途，不解讀目前顯示的數值，也不構成買賣建議。</div>
+    <div id="termHelpRange" class="term-help-range" hidden><b>常見區間怎麼看</b><span></span></div>
   </div>
 </div>
 
@@ -2328,7 +2328,7 @@ if(SNAP){ loadHistory(); }
 (function(){
   const input=$('#searchInput'), drop=$('#acDrop'), box=$('#searchBox');
   const modal=$('#stkModal'), mBody=$('#smBody'), mClose=$('#smClose');
-  const termModal=$('#termHelpModal'), termTitle=$('#termHelpTitle'), termText=$('#termHelpText'), termClose=$('#termHelpClose');
+  const termModal=$('#termHelpModal'), termTitle=$('#termHelpTitle'), termText=$('#termHelpText'), termRange=$('#termHelpRange'), termClose=$('#termHelpClose');
   if(!input||!modal) return;
   if(SNAP) return; // 快照模式不需要互動查詢
 
@@ -2369,6 +2369,24 @@ if(SNAP){ loadHistory(); }
     '當沖比':'當日沖銷成交量占整體成交量的比例，用來觀察交易活動中短線當沖所占程度。',
     '集保散戶':'依集保股權分散資料觀察較小持股級距的變化，作為散戶持股集中或流出的籌碼線索。',
     '投信連買':'本地投信基金連續多個交易日淨買超，用來觀察投信資金是否持續進場。'
+  };
+  const TERM_RANGE={
+    'RSI':'固定範圍 0–100。30–70 通常視為中間區；>70 常稱偏熱／超買；<30 常稱偏弱／超賣。超買或超賣不等於一定反轉。',
+    'MACD':'沒有固定上下限，但 0 軸是通用分界：>0 代表快線整體位於慢線上方，<0 則相反；更重視方向、交叉與柱體變化。',
+    'ADX':'通常落在 0–100。<20 趨勢偏弱；20–25 可能形成中；>25 趨勢較明確；>40 趨勢很強。高值可能是強漲，也可能是強跌。',
+    '%B':'常見基準為 0–1。0 代表布林下軌，0.5 接近中線，1 代表上軌；<0 跌出下軌，>1 突破上軌，因此實際值可以超出 0–1。',
+    'ATR':'ATR 原始價格值從 0 起，沒有跨股票通用高低。換算 ATR÷股價後，本看板以 ≤3% 較平穩、3–5% 留意、>5% 高波動。',
+    'DMI 動向':'+DI 與 −DI 通常各在 0–100。+DI 高於 −DI 表示向上移動較強，−DI 高於 +DI 表示向下移動較強；差距與 ADX 要一起看。',
+    '威廉%R':'固定範圍 −100 至 0。−20 至 0 常稱超買區；−80 至 −100 常稱超賣區；中間區代表價格位於近期區間中段。',
+    'CCI':'理論上沒有固定上下限。−100 至 +100 常視為一般波動區；>+100 表示正向動能較強／偏熱；<−100 表示負向動能較強／偏弱。',
+    'EPS 年增':'>0% 代表每股盈餘較去年同期成長；0% 附近代表大致持平；<0% 代表衰退。極大百分比可能來自去年基期很低。',
+    '營收 年增':'>0% 代表營收較去年同期成長；0% 附近代表持平；<0% 代表年減。不同產業沒有共同的「優秀百分比」。',
+    '營收 月增':'>0% 代表營收較上月增加；0% 附近代表持平；<0% 代表月減。季節性產業不宜只用單月正負判斷。',
+    '法人淨買':'正值代表法人淨買超，負值代表淨賣超，0 附近代表買賣大致相抵；張數大小應再和該股成交量比較。',
+    '融資增減':'正值代表融資餘額增加，負值代表減少，0 附近代表變化不大；沒有適用所有股票的固定安全張數。',
+    '券資比':'從 0% 起、沒有固定上限。本看板以 <6% 相對低、6–12% 開始留意、12–20% 偏高、≥20% 空方部位相對明顯。',
+    '當沖比':'固定在 0–100%。越接近 100% 代表成交越偏向當日沖銷；本看板以 ≥30% 標示為當沖偏熱。',
+    '集保散戶':'若顯示持股變化率，正值代表小額持股級距增加，負值代表減少；沒有跨股票通用的安全百分比，重點是連續趨勢。'
   };
   const debounce=(fn,ms)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
 
@@ -2523,7 +2541,8 @@ if(SNAP){ loadHistory(); }
   }
   function openTermHelp(el){
     const label=el?.dataset.termHelp, text=TERM_HELP[label];if(!label||!text||!termModal)return;
-    termReturnFocus=el;termTitle.textContent=label;termText.textContent=text;termModal.classList.add('show');termClose.focus();
+    const range=TERM_RANGE[label];termReturnFocus=el;termTitle.textContent=label;termText.textContent=text;
+    termRange.hidden=!range;termRange.querySelector('span').textContent=range||'';termModal.classList.add('show');termClose.focus();
   }
   function closeTermHelp(restore=true){
     if(!termModal)return;termModal.classList.remove('show');
