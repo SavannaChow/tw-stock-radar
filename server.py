@@ -61,11 +61,12 @@ class Handler(SimpleHTTPRequestHandler):
 
     def _watchlist_payload(self, details: bool, live: bool) -> dict:
         import watchlist
-        items = watchlist.load()
+        data = watchlist.load_data()
+        items, groups = data["items"], data["groups"]
         if not details or not items:
-            return {"ok": True, "items": items, "count": len(items)}
+            return {"ok": True, "groups": groups, "items": items, "count": len(items)}
 
-        key = (tuple(x["code"] for x in items), bool(live))
+        key = (tuple((x["code"], x.get("group_id")) for x in items), bool(live))
         hit = _WATCHLIST_CACHE.get("value")
         if hit and hit[0] == key and time.monotonic() - hit[1] < 20:
             return hit[2]
@@ -88,6 +89,7 @@ class Handler(SimpleHTTPRequestHandler):
             row.setdefault("code", code)
             row.setdefault("name", item.get("name") or code)
             row["added_at"] = item.get("added_at")
+            row["group_id"] = item.get("group_id") or watchlist.DEFAULT_GROUP_ID
             quote = realtime_quote.fetch_quote(code) if (live and realtime_quote) else None
             if quote:
                 row.update({
@@ -120,7 +122,7 @@ class Handler(SimpleHTTPRequestHandler):
                     item = items[i]
                     rows[i] = {"ok": False, "code": item["code"], "name": item.get("name"),
                                "error": f"{type(e).__name__}: {e}"}
-        payload = {"ok": True, "items": rows, "count": len(rows),
+        payload = {"ok": True, "groups": groups, "items": rows, "count": len(rows),
                    "updated_at": time.strftime("%Y-%m-%dT%H:%M:%S")}
         _WATCHLIST_CACHE["value"] = (key, time.monotonic(), payload)
         return payload
@@ -292,15 +294,45 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         split = urlsplit(self.path)
-        if split.path != "/api/watchlist":
+        if split.path not in ("/api/watchlist", "/api/watchlist/groups"):
             self.send_error(404)
             return
         try:
             import watchlist
             obj = self._read_json()
-            items, created = watchlist.add(str(obj.get("code", "")), str(obj.get("name", "")))
+            if split.path == "/api/watchlist/groups":
+                data = watchlist.create_group(str(obj.get("name", "")))
+                status = 201
+            else:
+                group_id = obj.get("group_id") if "group_id" in obj else None
+                _, created = watchlist.add(str(obj.get("code", "")), str(obj.get("name", "")),
+                                           None if group_id is None else str(group_id))
+                data = watchlist.load_data()
+                status = 201 if created else 200
             _WATCHLIST_CACHE.clear()
-            self._send_json({"ok": True, "items": items, "count": len(items)}, 201 if created else 200)
+            self._send_json({"ok": True, **data, "count": len(data["items"])}, status)
+        except ValueError as e:
+            self._send_json({"ok": False, "error": str(e)}, 400)
+        except Exception as e:
+            self._send_json({"ok": False, "error": f"{type(e).__name__}: {e}"}, 500)
+
+    def do_PATCH(self):
+        split = urlsplit(self.path)
+        if split.path not in ("/api/watchlist", "/api/watchlist/groups"):
+            self.send_error(404)
+            return
+        try:
+            import watchlist
+            qs = parse_qs(split.query)
+            obj = self._read_json()
+            if split.path == "/api/watchlist/groups":
+                group_id = (qs.get("id") or [""])[0]
+                data = watchlist.rename_group(group_id, str(obj.get("name", "")))
+            else:
+                code = (qs.get("code") or [""])[0]
+                data = watchlist.move(code, str(obj.get("group_id", "")))
+            _WATCHLIST_CACHE.clear()
+            self._send_json({"ok": True, **data, "count": len(data["items"])})
         except ValueError as e:
             self._send_json({"ok": False, "error": str(e)}, 400)
         except Exception as e:
@@ -308,15 +340,21 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_DELETE(self):
         split = urlsplit(self.path)
-        if split.path != "/api/watchlist":
+        if split.path not in ("/api/watchlist", "/api/watchlist/groups"):
             self.send_error(404)
             return
-        code = (parse_qs(split.query).get("code") or [""])[0]
         try:
             import watchlist
-            items, removed = watchlist.remove(code)
+            qs = parse_qs(split.query)
+            if split.path == "/api/watchlist/groups":
+                data = watchlist.delete_group((qs.get("id") or [""])[0])
+                removed = True
+            else:
+                _, removed = watchlist.remove((qs.get("code") or [""])[0])
+                data = watchlist.load_data()
             _WATCHLIST_CACHE.clear()
-            self._send_json({"ok": True, "removed": removed, "items": items, "count": len(items)})
+            self._send_json({"ok": True, "removed": removed, **data,
+                             "count": len(data["items"])})
         except ValueError as e:
             self._send_json({"ok": False, "error": str(e)}, 400)
         except Exception as e:
