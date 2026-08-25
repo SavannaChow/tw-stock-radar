@@ -222,10 +222,11 @@
   .guide-basics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:14px}.guide-basic{border:1px solid var(--line2);border-radius:var(--r-sm);padding:11px 13px;background:rgba(255,255,255,.02);font-size:13px;line-height:1.6;color:var(--dim)}.guide-basic b{display:block;color:var(--txt);font-size:14px;margin-bottom:2px}.guide-basic.warn{border-color:rgba(198,154,76,.32);background:rgba(198,154,76,.055)}
   .guide-order{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:18px}.guide-step{position:relative;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 11px;background:rgba(0,0,0,.13)}.guide-step .n{font-family:var(--mono);font-size:11px;color:var(--acc2)}.guide-step b{display:block;font-size:14px;margin:3px 0}.guide-step span:last-child{font-size:12px;color:var(--dim);line-height:1.5}
   .guide-section{margin-top:14px}.guide-section-h{display:flex;align-items:baseline;gap:9px;margin-bottom:8px;padding:0 2px}.guide-section-h h3{font-family:var(--ttl);font-size:18px;font-weight:650}.guide-section-h span{font-size:12px;color:var(--faint)}
-  .guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.guide-card{border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 14px;background:rgba(255,255,255,.018);min-width:0}.guide-card:hover{border-color:var(--line2);background:rgba(90,147,189,.035)}
+  .guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.guide-card{border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 14px;background:rgba(255,255,255,.018);min-width:0;cursor:pointer;transition:border-color .15s,background .15s,transform .15s}.guide-card:hover{border-color:var(--line2);background:rgba(90,147,189,.035);transform:translateY(-1px)}.guide-card:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}.guide-card::after{content:'點開詳解  →';display:block;margin-top:9px;font-family:var(--mono);font-size:10.5px;color:var(--acc2);opacity:.76}
   .guide-card-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}.guide-card-h b{font-size:15px}.guide-code{font-family:var(--mono);font-size:10.5px;color:var(--acc2);border:1px solid rgba(90,147,189,.25);border-radius:8px;padding:2px 6px;margin-left:auto;white-space:nowrap}.guide-card p{font-size:12.5px;line-height:1.6;color:var(--dim);margin-top:5px}.guide-card p b{color:var(--txt);font-weight:600}.guide-read{margin-top:9px;border-left:2px solid var(--acc);padding:6px 8px;background:rgba(90,147,189,.055);font-family:var(--mono);font-size:11.5px;line-height:1.55;color:var(--txt)}.guide-risk{color:#c8a86b!important}.guide-foot{margin-top:18px;border:1px solid rgba(198,154,76,.25);border-radius:var(--r-sm);padding:12px 14px;background:rgba(198,154,76,.045);font-size:13px;line-height:1.65;color:var(--dim)}.guide-foot b{color:var(--gold)}
+  .guide-modal{position:fixed;inset:0;z-index:97;display:none;align-items:flex-start;justify-content:center;padding:46px 16px;background:rgba(3,7,14,.78);backdrop-filter:blur(5px);overflow-y:auto}.guide-modal.show{display:flex;animation:smfade .18s ease}.guide-dialog{position:relative;width:100%;max-width:760px;background:var(--panel);border:1px solid var(--line2);border-radius:15px;padding:23px;box-shadow:var(--bevel),var(--depth)}.guide-modal-close{position:absolute;right:14px;top:12px;width:34px;height:34px;border:1px solid var(--line2);border-radius:9px;background:rgba(255,255,255,.025);color:var(--dim);font-size:22px;cursor:pointer}.guide-modal-close:hover{color:var(--txt);border-color:var(--acc)}.guide-modal-kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:1.2px;color:var(--acc2)}.guide-modal-title{font-family:var(--ttl);font-size:25px;font-weight:680;margin-top:4px;padding-right:42px}.guide-modal-summary{font-size:14px;line-height:1.7;color:var(--dim);margin-top:7px}.guide-modal-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.guide-importance{border:1px solid rgba(90,147,189,.35);border-radius:999px;padding:5px 9px;font-size:11.5px;color:var(--acc2)}.guide-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}.guide-detail-block{border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 13px;background:rgba(255,255,255,.018)}.guide-detail-block h4{font-size:13px;color:var(--txt);margin-bottom:5px}.guide-detail-block p{font-size:12.5px;line-height:1.65;color:var(--dim)}.guide-detail-block.decision{grid-column:1/-1;border-color:rgba(198,154,76,.28);background:rgba(198,154,76,.045)}.guide-detail-block.decision h4{color:var(--gold)}.guide-modal-note{font-size:11.5px;color:var(--faint);line-height:1.55;margin-top:12px}
   @media(max-width:980px){.guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.guide-order{grid-template-columns:repeat(3,minmax(0,1fr))}}
-  @media(max-width:620px){.guide-head{display:block}.guide-basics,.guide-grid{grid-template-columns:1fr}.guide-order{grid-template-columns:repeat(2,minmax(0,1fr))}.guide-title{font-size:23px}.guide-card{padding:13px}.guide-section-h{display:block}.guide-section-h span{display:block;margin-top:2px}}
+  @media(max-width:620px){.guide-head{display:block}.guide-basics,.guide-grid{grid-template-columns:1fr}.guide-order{grid-template-columns:repeat(2,minmax(0,1fr))}.guide-title{font-size:23px}.guide-card{padding:13px}.guide-section-h{display:block}.guide-section-h span{display:block;margin-top:2px}.guide-modal{padding:22px 10px}.guide-dialog{padding:19px 15px}.guide-modal-title{font-size:22px}.guide-detail-grid{grid-template-columns:1fr}.guide-detail-block.decision{grid-column:auto}}
 
   .grid{display:grid;grid-template-columns:360px 1fr;gap:14px}
   @media(max-width:880px){.grid{grid-template-columns:1fr}}
@@ -1413,6 +1414,19 @@
     <div class="wl-group-new"><input id="watchGroupName" maxlength="24" placeholder="例如：航太股、記憶體股" aria-label="新分類名稱"><button id="watchGroupCreate" type="button">新增分類</button></div>
     <div class="wl-group-list" id="watchGroupList"></div>
     <div class="wl-group-manager-error" id="watchGroupError" role="alert"></div>
+  </div>
+</div>
+
+<!-- 指標詳解 modal（只服務指標解釋頁，不連動自選股或個股詳情） -->
+<div id="guideModal" class="guide-modal" role="dialog" aria-modal="true" aria-labelledby="guideModalTitle" aria-describedby="guideModalSummary">
+  <div class="guide-dialog">
+    <button class="guide-modal-close" id="guideModalClose" type="button" aria-label="關閉指標詳解" title="關閉 (ESC)">×</button>
+    <div class="guide-modal-kicker" id="guideModalCode">INDICATOR GUIDE</div>
+    <h3 class="guide-modal-title" id="guideModalTitle">指標詳解</h3>
+    <div class="guide-modal-summary" id="guideModalSummary"></div>
+    <div class="guide-modal-meta"><span class="guide-importance" id="guideModalImportance"></span></div>
+    <div class="guide-detail-grid" id="guideModalBody"></div>
+    <div class="guide-modal-note">這些內容是閱讀指標的方法，不是個別股票的買賣建議。資料不完整時，應先降低判斷信心。</div>
   </div>
 </div>
 
@@ -3356,6 +3370,61 @@ if(SNAP){ loadHistory(); }
       else if(drop.classList.contains('show')) hideDrop();
   });
   syncWatchlist();
+})();
+</script>
+<script>
+/* 指標卡片詳解：純前端靜態內容，與報價、自選股和個股 modal 完全解耦 */
+(function(){
+  const DETAILS={
+    '股價／漲跌幅':{code:'PRICE · %',importance:'重要性：基礎資訊，不能單獨決策',summary:'告訴你市場現在用多少錢成交，以及今天相對昨天走了多遠。',principle:'每一筆買賣撮合形成成交價；漲跌幅是目前價相對昨收的百分比，所以不同價位股票可以比較當日強弱。',signals:'漲價配合量增通常比無量上漲可靠；下跌縮量可能只是觀望，放量下跌則常代表賣壓較真實。',basis:'同時比較昨收、今開、當日高低、成交量、均線位置與產業走勢，不要只看紅綠。',decision:'不能。股價低不代表便宜，漲幅大也不代表還會漲；它是現象，不是估值或買點。',risk:'追逐瞬間漲幅容易買在情緒高點；延遲行情、跳空與流動性不足也會讓看到的價格不等於能成交的價格。'},
+    '今開／最高／最低':{code:'OHLC',importance:'重要性：重要的盤中位置資訊',summary:'用一天的價格範圍，快速看多空今天把價格推到哪裡。',principle:'開盤反映隔夜資訊後的第一輪定價；最高與最低記錄盤中買賣雙方曾到達的極端位置。',signals:'收在高點附近代表買方當日較強；收在低點附近代表賣方較強。開高走低與開低走高的意義不同。',basis:'觀察目前價在今日區間的位置，再配合量能及前一日高低點；連續多日的結構比單日更可靠。',decision:'只能輔助。它適合判斷當日強弱與進場是否太急，不能單獨預測隔日方向。',risk:'盤中高低會持續變動；尾盤拉抬、當沖與消息衝擊都可能讓單日形狀失真。'},
+    '成交量':{code:'VOLUME',importance:'重要性：核心確認指標',summary:'成交量代表有多少股票真正換手，是判斷價格變化是否獲得市場參與的基本證據。',principle:'每一筆成交同時計入買賣雙方，但量本身沒有多空；必須和價格方向及過去平均量比較。',signals:'量增價漲常表示需求增強；量增價跌常表示賣壓；爆量不漲可能是高檔換手，量縮盤整則表示觀望。',basis:'比較 5、20 日均量或相對量，並看放量後價格能否守住突破位置，而不是只看當天一根量柱。',decision:'很值得參考，但不能單獨買賣。量用來確認價格訊號，方向仍由價位結構決定。',risk:'小型股少量交易就可能放大比例；異常量也可能來自處分、權證避險或一次性交易。'},
+    '相對量':{code:'RELVOL',importance:'重要性：重要的異常偵測',summary:'把今天成交量除以近期平常量，快速辨認今天是否特別受市場注意。',principle:'用倍數消除不同股票平常成交量差異；1x 約等於平常，2x 表示約為近期常態兩倍。',signals:'價格突破且相對量同步放大，可信度通常較高；放量下跌或爆量長上影要留意賣壓。',basis:'同一交易時段比較才公平，盤中數字應經時間校正；收盤後的完整數字最容易解讀。',decision:'可用來決定「要不要進一步看」，不能告訴你該做多或做空。',risk:'盤初相對量容易失真；事件日、除權息與近期均量過低都可能放大倍數。'},
+    '平均成交金額／買賣價差':{code:'LIQUIDITY',importance:'重要性：保守操作的核心門檻',summary:'衡量你能否用合理價格順利進出；看對方向卻賣不掉，仍然是風險。',principle:'成交金額代表市場可容納的資金，買賣價差代表立即成交需付出的隱形成本。',signals:'均額穩定且價差小通常較好進出；成交突然萎縮或價差擴大，代表市場深度正在變差。',basis:'本看板把均額低於 3,000 萬視為高風險、3,000 萬至 1 億列為留意；價差超過 0.2% 開始留意、0.5% 偏高。',decision:'對保守投資者非常重要。流動性不合格時，即使其他指標漂亮也可以直接不交易。',risk:'市價單在薄量股票可能嚴重滑價；停損價只是計畫，不保證有人在該價位承接。'},
+    'RSI':{code:'RSI · 0–100',importance:'重要性：動能輔助，不是反轉按鈕',summary:'比較近期上漲與下跌力道，顯示市場短期情緒偏熱還是偏弱。',principle:'RSI 將一段期間的平均漲幅與平均跌幅換算成 0–100；本質是速度與力道，不是價格高低。',signals:'70 以上常稱偏熱、30 以下常稱偏弱；多頭可長時間維持高檔，空頭也能長時間維持低檔。',basis:'看 RSI 的方向、是否背離，以及它發生在多頭或空頭結構；搭配 MA20、ADX 與量能。',decision:'不能因 RSI 高就賣、低就買。較好的用途是避免追高，或等待動能重新轉強確認。',risk:'盤整時訊號較敏感，強趨勢時過早猜反轉會錯過行情或接到持續下跌的股票。'},
+    'MA20 乖離':{code:'20-DAY GAP',importance:'重要性：重要的追高與趨勢位置',summary:'衡量股價離月線多遠，讓你知道目前是在趨勢上方，還是已經跑得太快。',principle:'以目前價減去 20 日均價，再換算百分比；正值在月線上，負值在月線下。',signals:'小幅正乖離常見於健康多頭；乖離快速擴大代表短線擁擠，負乖離擴大則代表弱勢加深。',basis:'不能所有股票都用固定 5%；本看板也以 ATR 換算偏離是否超過自身平常波動。',decision:'適合判斷「現在追是否太貴」，不負責判斷公司價值。等待回測月線或量價重新確認通常更保守。',risk:'強勢股可能沿著高乖離續漲；只因乖離大就放空，同樣可能遭遇軋空。'},
+    'ADX':{code:'ADX',importance:'重要性：趨勢策略的重要濾網',summary:'ADX 只回答趨勢夠不夠強，不回答目前方向是上還是下。',principle:'由方向性移動與真實波幅計算，數值越高代表單一方向的延續性越明顯。',signals:'20 以下多為盤整，20–25 可能形成趨勢，25 以上較明確；ADX 上升比單看絕對值更有資訊。',basis:'必須搭配多方／空方方向、均線與價格結構；高 ADX 加空方代表跌勢強，不是買點。',decision:'不能單獨決定買賣，但能幫你判斷趨勢訊號是否值得相信，或是否應避免在盤整追單。',risk:'ADX 是落後指標，等它很高時行情可能已走一段；趨勢末端仍可能維持高值。'},
+    '趨勢 多方／空方':{code:'SUPERTREND',importance:'重要性：方向判讀的重要輔助',summary:'用價格和波動度畫出跟隨線，協助辨認目前偏多、偏空及可能翻向。',principle:'以 ATR 調整線的位置；價格穿越門檻後切換方向，波動大的股票會需要更寬的確認空間。',signals:'多方且線向上代表結構偏強；空方且線向下偏弱。翻向若有量與 ADX 配合，比單獨翻色可靠。',basis:'觀察翻向後能否站穩、是否與 MA20／季線同方向，以及盤面是否處於趨勢環境。',decision:'可作為進出規則的一部分，但不應忽略估值、籌碼與風報比；「等待確認」也是合理選擇。',risk:'橫盤時會來回翻向造成連續小虧；重大跳空也可能在訊號出現前已產生損失。'},
+    '強弱分':{code:'SCORE · 0–100',importance:'重要性：排序工具，非預測模型',summary:'把多項技術條件濃縮成相對分數，方便快速排序與找出值得再研究的股票。',principle:'依看板既定權重整合趨勢、動能、位置與波動；分數反映條件吻合度，不是未來報酬率。',signals:'高分代表近期條件較強，分數持續上升比單日高分更有意義；快速掉分表示結構正在轉弱。',basis:'回頭查看是哪幾個子指標貢獻分數，並比較同產業與同市場環境，不能只比較不同性質標的。',decision:'適合縮小研究清單，不適合看到 80 分就直接買。高分但過度乖離時反而要防追高。',risk:'權重無法涵蓋突發新聞與基本面轉折；資料缺漏也可能讓分數的可信度下降。'},
+    '季線／距年高／月線 ATR':{code:'CHASE RISK',importance:'重要性：保守進場的重要風險組合',summary:'從中期趨勢、長期位置與正常波動三個角度，判斷股票是否弱勢或已經太擁擠。',principle:'季線約代表 60 日成本；距年高顯示目前離一年高點多遠；月線 ATR 把偏離換成個股自身波動倍數。',signals:'站上季線且距月線不遠通常較健康；接近年高可代表強勢，但若已離月線 2–3 ATR，追價風險升高。',basis:'三者合看：趨勢向上、回檔有守、量能正常，比只因創高追入更穩健。',decision:'可直接影響是否暫緩進場。≥2 ATR 應留意，≥3 ATR 宜視為高追價風險，而非必然反轉。',risk:'強勢股仍可能繼續創高；過度等待也可能錯失行情，因此應用部位與停損管理，而非猜最高點。'},
+    '外資／投信':{code:'INSTITUTIONS',importance:'重要性：重要籌碼參考',summary:'呈現兩類主要法人當日買進減賣出的張數，觀察大型資金偏向。',principle:'交易所依投資人類別彙總成交；正值是淨買超、負值是淨賣超，但不揭露每筆交易目的。',signals:'連續買超且價格量能同步轉強，通常比單日大買可靠；買超但股價不漲要留意上方賣壓。',basis:'看 5–10 日連續性、占成交量比例、外資與投信是否同向，以及股價有沒有回應。',decision:'值得參考但不能跟單。法人買超可當確認條件，不能取代進場位置與停損。',risk:'法人可能因指數調整、避險、贖回或短線交易買賣；今天買也可能明天賣。'},
+    '融資增減':{code:'MARGIN',importance:'重要性：風險與擁擠度的重要警示',summary:'觀察市場借錢買股的部位增加或減少，常用來判斷散戶槓桿是否累積。',principle:'融資增加表示未償還借款部位變多；這些部位有利息、維持率與追繳壓力。',signals:'股價高檔、法人賣超、融資快速增加是較不健康組合；上漲伴融資減少可能代表籌碼沉澱。',basis:'看連續變化及融資占流通股比例，不要只看一天增減張數；不同股票基準差異很大。',decision:'不適合單獨抄底或做空，但能決定你是否降低部位、提高警戒或乾脆不碰擁擠標的。',risk:'融資減少也可能是被迫停損，不一定利多；大型股與熱門股的絕對張數不能直接互比。'},
+    '近 10 日法人籌碼':{code:'10-DAY CHIPS',importance:'重要性：比單日更可靠的籌碼趨勢',summary:'累計外資與投信近十日買賣超，降低一天調節造成的雜訊。',principle:'把每日淨買賣超加總，觀察資金是否持續流入或流出；重點是方向、持續性及相對成交量。',signals:'累計正值擴大且股價走強較健康；累計買超但股價疲弱，可能有更大的賣方供給。',basis:'同時看每日分布，避免總數被單一巨量日主導；最好換算占同期成交量比例。',decision:'可提高或降低趨勢判斷信心，但不能保證法人尚未開始反向交易。',risk:'十日加總仍然落後；ETF 成分調整等被動交易可能造成與基本面無關的大額數字。'},
+    '本益比':{code:'P/E',importance:'重要性：估值基礎，但需同業比較',summary:'表示市場願意為公司每一元年度獲利支付多少倍價格。',principle:'通常以股價除以近四季或預估 EPS；倍數同時反映成長預期、產業風險與市場情緒。',signals:'本益比升高可能是股價先反映成長，也可能是獲利下滑；低本益比可能便宜，也可能是景氣高峰陷阱。',basis:'比較同產業、公司自身歷史區間、獲利週期與未來成長；EPS 非正值時本益比通常失去意義。',decision:'不能用固定倍數判斷所有股票。它回答「價格相對獲利貴不貴」，不回答短線何時買。',risk:'一次性收益會扭曲 EPS；景氣循環股在獲利高峰常看似低本益比，之後獲利反轉反而套牢。'},
+    'EPS／營收 YoY':{code:'FUNDAMENTALS',importance:'重要性：公司體質的核心基礎',summary:'EPS 看公司替每股賺多少，營收年增率看業務規模相對去年是否成長。',principle:'EPS 來自稅後淨利除以加權股數；營收 YoY 用同月比較降低季節性，但營收不等於獲利。',signals:'營收成長且 EPS 同步改善較健康；營收增、EPS 降可能是毛利或費用惡化；兩者都轉弱要提高警覺。',basis:'看至少數季趨勢、毛利率與一次性項目，而非單月；ETF 不適用個別公司的 EPS 判法。',decision:'中長期非常值得參考，但無法提供精確買點；好公司買得太貴仍可能長期套牢。',risk:'公布資料有時間落差，股價可能提前反映；基期過低也會製造很高的 YoY。'},
+    'ATR 波動率':{code:'ATR %',importance:'重要性：部位與停損的核心風險尺度',summary:'估算股票近期一天通常會震盪多大，讓不同價位股票的波動可以比較。',principle:'ATR 使用最高、最低與前收計算真實波幅，再平滑成近期平均；除以股價後得到百分比。',signals:'ATR 上升代表市場不確定性或趨勢動能增加；下降代表波動收斂，但不等於沒有風險。',basis:'本看板以 3% 以下較平穩、3–5% 留意、5% 以上高波動；仍應和標的自身歷史比較。',decision:'不能決定方向，但應直接影響部位大小與停損距離。ATR 越高，保守投資者通常應減少部位。',risk:'ATR 是歷史平均，重大消息可讓實際波動遠超過它；把停損設太近也容易被正常震盪洗掉。'},
+    '60／120 日回撤':{code:'DRAWDOWN',importance:'重要性：歷史壓力與套牢風險的重要指標',summary:'回答過去一段時間內，從階段高點往下最深曾經跌多少。',principle:'逐日比較當時價格與先前最高點，取最大跌幅；它衡量曾承受的痛苦，不是日常波動。',signals:'回撤越深，代表持有期間可能需要更大耐心與風險承受力；修復速度也能反映韌性。',basis:'比較 60 與 120 日並和同產業對照；本看板 ≤-12% 留意、≤-20% 視為風險偏高。',decision:'適合排除超出自身承受度的標的，不能因跌得深就認定便宜或一定反彈。',risk:'歷史最大回撤不是未來下限；尚未經歷空頭的新股可能看似穩定，實際風險仍未知。'},
+    '健診等級':{code:'GRADE · A–E',importance:'重要性：總覽入口，不是最終答案',summary:'把技術、籌碼、基本面、估值與資料完整度濃縮成容易掃描的等級。',principle:'依看板規則將多個欄位評分後彙總；A 到 E 是條件摘要，不是信用評等或獲利機率。',signals:'等級持續改善比單日跳升可靠；高等級若同時資料缺漏，信心仍應打折。',basis:'點回各子項確認優缺點，特別看是否由單一極端指標拉高，以及風險快篩提出什麼警告。',decision:'只能用來排序和決定研究順序。不能因 A 就買，也不能因 E 就直接放空。',risk:'權重是模型選擇，無法納入所有新聞與質化資訊；輸入資料錯誤會一起反映到總分。'},
+    '做多／做空／等待確認':{code:'SIGNAL',importance:'重要性：執行提示，必須服從風控',summary:'將多項技術條件是否同向，整理成偏多、偏空或尚未形成共振。',principle:'依價格趨勢、動能與波動門檻觸發；訊號通常在條件確認後才出現，因此不是最低點或最高點預報。',signals:'做多配合量增與趨勢轉強較可靠；做空／減碼代表風險偏下；等待確認表示證據互相矛盾或不足。',basis:'檢查大盤方向、流動性、籌碼、進場位置與至少可接受的風報比，再決定是否採用。',decision:'訊號不是下單命令。條件不適合、資料不足或你無法承受停損時，完全可以不交易。',risk:'盤整會產生假突破；跳空可能讓你在訊號出現後才成交，實際成本和模型假設不同。'},
+    '停損／目標一／目標二':{code:'RISK PLAN',importance:'重要性：交易前必看的核心計畫',summary:'先定義判斷錯誤時在哪裡退出，再設定可能分批實現報酬的位置。',principle:'本看板依訊號方向與 ATR 推估距離，使高波動股票有較寬空間、低波動股票較窄。',signals:'若進場價離停損太遠，代表風險過大；目標距離若不足以補償停損與交易成本，這筆交易不值得做。',basis:'先用可承受損失反推股數，再看目標一、二；價格結構改變時應重新評估，而非機械死守。',decision:'它不預測一定到價，但能直接判斷交易是否符合你的風險上限。沒有合理停損就不應進場。',risk:'跳空、跌停與流動性不足會讓實際成交差於停損價；擴大停損或攤平會破壞原本風控。'}
+  };
+
+  const modal=document.getElementById('guideModal'), closeBtn=document.getElementById('guideModalClose');
+  const titleEl=document.getElementById('guideModalTitle'), codeEl=document.getElementById('guideModalCode');
+  const summaryEl=document.getElementById('guideModalSummary'), importanceEl=document.getElementById('guideModalImportance');
+  const bodyEl=document.getElementById('guideModalBody');let returnFocus=null;
+  if(!modal||!bodyEl)return;
+
+  function block(label,text,decision=false){
+    const el=document.createElement('section');el.className='guide-detail-block'+(decision?' decision':'');
+    const h=document.createElement('h4');h.textContent=label;const p=document.createElement('p');p.textContent=text;
+    el.append(h,p);return el;
+  }
+  function openGuide(card){
+    const name=card.querySelector('.guide-card-h b')?.textContent.trim(),d=DETAILS[name];if(!d)return;
+    returnFocus=card;titleEl.textContent=name;codeEl.textContent=d.code;summaryEl.textContent=d.summary;importanceEl.textContent=d.importance;
+    bodyEl.replaceChildren(block('怎麼運作',d.principle),block('常見現象',d.signals),block('判斷依據',d.basis),block('主要風險',d.risk),block('能否據此買賣？',d.decision,true));
+    modal.classList.add('show');closeBtn.focus();
+  }
+  function closeGuide(){modal.classList.remove('show');if(returnFocus){returnFocus.focus();returnFocus=null;}}
+  document.querySelectorAll('.guide-card').forEach(card=>{
+    const name=card.querySelector('.guide-card-h b')?.textContent.trim();if(!DETAILS[name])return;
+    card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-haspopup','dialog');card.setAttribute('aria-label',`查看「${name}」詳細解釋`);
+    card.addEventListener('click',()=>openGuide(card));
+    card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openGuide(card);}});
+  });
+  closeBtn.addEventListener('click',closeGuide);modal.addEventListener('click',e=>{if(e.target===modal)closeGuide();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('show')){e.preventDefault();closeGuide();}});
 })();
 </script>
 </body>
