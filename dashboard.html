@@ -141,6 +141,15 @@
   .wl-refresh{font-family:var(--mono);font-size:13px;color:var(--acc2);border:1px solid var(--line2);
     background:rgba(90,147,189,.08);border-radius:var(--r-sm);padding:9px 13px;cursor:pointer}
   .wl-refresh:hover{background:rgba(90,147,189,.16)}.wl-refresh:disabled{opacity:.45;cursor:wait}
+  .wl-groupbar{display:flex;align-items:center;gap:10px;margin:2px 0 14px;padding:8px;border:1px solid var(--line);border-radius:var(--r-sm);background:rgba(0,0,0,.12)}
+  .wl-group-tabs{display:flex;flex:1;min-width:0;gap:6px;overflow-x:auto;scrollbar-width:thin;padding-bottom:1px}
+  .wl-group-tab,.wl-group-action{flex:0 0 auto;border:1px solid var(--line2);border-radius:16px;background:rgba(255,255,255,.025);color:var(--dim);cursor:pointer;font-family:var(--tc);font-size:13px;padding:6px 11px;white-space:nowrap;transition:all .15s}
+  .wl-group-tab:hover,.wl-group-action:hover{border-color:var(--acc);color:var(--acc2);background:rgba(90,147,189,.09)}
+  .wl-group-tab.on{border-color:rgba(90,147,189,.55);color:var(--acc2);background:rgba(90,147,189,.15);box-shadow:inset 0 0 0 1px rgba(90,147,189,.08)}
+  .wl-group-tab .n{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:5px}.wl-group-tab.on .n{color:var(--acc2)}
+  .wl-group-actions{display:flex;gap:6px;flex:0 0 auto}.wl-group-action{border-radius:7px;padding:6px 9px;font-size:12.5px}
+  .wl-group-action.primary{color:var(--gold);border-color:rgba(198,154,76,.38);background:rgba(198,154,76,.07)}
+  .wl-group-notice{display:none;font-size:12.5px;margin:-6px 2px 12px;color:var(--dim)}.wl-group-notice.show{display:block}.wl-group-notice.err{color:var(--up)}
   .wl-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:14px}
   .wl-sum{border:1px solid var(--line);border-radius:var(--r-sm);background:rgba(255,255,255,.018);padding:12px 14px}
   .wl-sum .k{font-family:var(--mono);font-size:12px;letter-spacing:.55px;color:var(--dim)}
@@ -152,7 +161,9 @@
   .wl-card.long{border-left:3px solid var(--up)}.wl-card.short{border-left:3px solid var(--dn)}
   .wl-top{display:flex;align-items:flex-start;gap:12px;padding-right:32px}
   .wl-code{font-family:var(--mono);font-size:14px;color:var(--acc2)}
-  .wl-name{font-size:20px;font-weight:650;margin-top:3px}.wl-ind{font-size:12.5px;color:var(--faint);margin-top:3px}
+  .wl-name{font-size:20px;font-weight:650;margin-top:3px}.wl-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:4px}.wl-ind{font-size:12.5px;color:var(--faint)}
+  .wl-card-group{max-width:140px;border:1px solid rgba(90,147,189,.3);border-radius:10px;background:rgba(90,147,189,.075);color:var(--acc2);font-family:var(--tc);font-size:12px;padding:2px 20px 2px 7px;cursor:pointer;outline:none}
+  .wl-card-group:hover,.wl-card-group:focus{border-color:var(--acc)}.wl-card-group:disabled{opacity:.55;cursor:wait}
   .wl-quote{margin-left:auto;text-align:right}.wl-price{font-family:var(--ttl);font-size:32px;font-weight:650;line-height:1}
   .wl-chg{font-family:var(--mono);font-size:16px;font-weight:700;margin-top:5px}
   .wl-remove{position:absolute;right:11px;top:11px;width:30px;height:30px;border:1px solid transparent;border-radius:7px;
@@ -189,7 +200,22 @@
   @media(max-width:560px){.wl-head{display:block}.wl-actions{margin-top:12px;justify-content:flex-start}.wl-summary{grid-template-columns:repeat(2,1fr)}
     .wl-metrics{grid-template-columns:repeat(2,1fr);gap:13px 10px}.wl-card{padding:15px}.wl-name{font-size:19px}.wl-price{font-size:30px}
     .wl-code{font-size:13px}.wl-ind{font-size:12px}.wl-pill{font-size:12px}.wl-metric .k{font-size:12px}.wl-metric .v{font-size:15px}.wl-plan{font-size:13px}
-    .wl-risk-cats{grid-template-columns:1fr}.wl-risk-cat .s{font-size:13px}.wl-risk-reason{font-size:12.5px}}
+    .wl-risk-cats{grid-template-columns:1fr}.wl-risk-cat .s{font-size:13px}.wl-risk-reason{font-size:12.5px}
+    .wl-groupbar{flex-wrap:wrap}.wl-group-tabs{flex-basis:100%;order:1}.wl-group-actions{order:2;margin-left:auto}.wl-card-group{max-width:128px;font-size:12.5px}}
+
+  /* 自選股分類管理：獨立小視窗，不動個股詳情 modal */
+  .wl-group-modal{position:fixed;inset:0;z-index:96;display:none;align-items:flex-start;justify-content:center;padding:70px 16px;background:rgba(3,7,14,.72);backdrop-filter:blur(4px);overflow-y:auto}
+  .wl-group-modal.show{display:flex;animation:smfade .18s ease}.wl-group-dialog{position:relative;width:100%;max-width:500px;background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:20px;box-shadow:var(--bevel),var(--depth)}
+  .wl-group-dialog h3{font-size:21px;font-weight:650;padding-right:38px}.wl-group-dialog .desc{font-size:13px;color:var(--dim);line-height:1.6;margin-top:5px}
+  .wl-group-close{position:absolute;right:13px;top:13px;width:30px;height:30px;border:1px solid var(--line2);border-radius:8px;background:rgba(255,255,255,.03);color:var(--dim);cursor:pointer}
+  .wl-group-new{display:flex;gap:8px;margin:16px 0 13px}.wl-group-new input,.wl-manage-name{min-width:0;flex:1;border:1px solid var(--line2);border-radius:7px;background:rgba(0,0,0,.24);color:var(--txt);font-family:var(--tc);font-size:14px;padding:8px 10px;outline:none}
+  .wl-group-new input:focus,.wl-manage-name:focus{border-color:var(--acc)}.wl-group-new button,.wl-manage-row button{border:1px solid var(--line2);border-radius:7px;background:rgba(255,255,255,.035);color:var(--dim);font-family:var(--tc);font-size:12.5px;padding:7px 10px;cursor:pointer;white-space:nowrap}
+  .wl-group-new button{color:var(--gold);border-color:rgba(198,154,76,.38)}.wl-group-list{display:flex;flex-direction:column;gap:7px}
+  .wl-manage-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:7px;align-items:center;border:1px solid var(--hair);border-radius:8px;padding:8px;background:rgba(255,255,255,.018)}
+  .wl-manage-row.default{grid-template-columns:minmax(0,1fr) auto}.wl-manage-row .count{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .wl-manage-row .danger{color:var(--up);border-color:rgba(255,77,109,.25)}.wl-delete-confirm{display:none;grid-column:1/-1;align-items:center;gap:7px;padding-top:7px;border-top:1px solid var(--hair);font-size:12px;color:var(--dim)}
+  .wl-manage-row.confirming .wl-delete-confirm{display:flex}.wl-delete-confirm .yes{color:var(--up)}.wl-group-manager-error{min-height:18px;font-size:12.5px;color:var(--up);margin-top:9px}
+  @media(max-width:560px){.wl-group-modal{padding:35px 12px}.wl-group-dialog{padding:17px}.wl-manage-row{grid-template-columns:minmax(0,1fr) auto}.wl-manage-row>.danger{grid-column:2}.wl-manage-row>.save{grid-column:1/-1}.wl-delete-confirm{flex-wrap:wrap}}
 
   .grid{display:grid;grid-template-columns:360px 1fr;gap:14px}
   @media(max-width:880px){.grid{grid-template-columns:1fr}}
@@ -1075,6 +1101,14 @@
         <div class="wl-actions"><span class="wl-updated" id="watchUpdated">尚未更新</span>
           <button class="wl-refresh" id="watchRefresh" type="button">↻ 更新即時資料</button></div>
       </div>
+      <div class="wl-groupbar">
+        <div class="wl-group-tabs" id="watchGroupTabs" aria-label="自選股分類"></div>
+        <div class="wl-group-actions">
+          <button class="wl-group-action primary" id="watchGroupAdd" type="button">＋ 新增分類</button>
+          <button class="wl-group-action" id="watchGroupManage" type="button">管理分類</button>
+        </div>
+      </div>
+      <div class="wl-group-notice" id="watchGroupNotice" role="status"></div>
       <div class="wl-summary" id="watchSummary"></div>
       <div class="wl-cards" id="watchCards"><div class="wl-empty" style="grid-column:1/-1"><b>尚無自選股</b>從上方搜尋個股，進入詳情後按「☆ 加入自選」。</div></div>
       <div class="zNote">訊號與健診為數據輔助，不代表投資建議；下單前仍應自行評估風險。</div>
@@ -1287,6 +1321,18 @@
 
 <!-- 下鑽 popover -->
 <div id="pop"></div>
+
+<!-- 自選股分類管理（與個股詳情完全分開） -->
+<div id="watchGroupModal" class="wl-group-modal" role="dialog" aria-modal="true" aria-labelledby="watchGroupTitle">
+  <div class="wl-group-dialog">
+    <button class="wl-group-close" id="watchGroupClose" type="button" aria-label="關閉分類管理">×</button>
+    <h3 id="watchGroupTitle">管理自選股分類</h3>
+    <div class="desc">分類儲存在目前這台伺服器。以 Synology 為正式來源時，手機和電腦開啟同一個 NAS 網址就會看到相同分類。</div>
+    <div class="wl-group-new"><input id="watchGroupName" maxlength="24" placeholder="例如：航太股、記憶體股" aria-label="新分類名稱"><button id="watchGroupCreate" type="button">新增分類</button></div>
+    <div class="wl-group-list" id="watchGroupList"></div>
+    <div class="wl-group-manager-error" id="watchGroupError" role="alert"></div>
+  </div>
+</div>
 
 <!-- 個股詳情 modal（比 popover 大；ESC / 點外 / ✕ 關閉） -->
 <div id="stkModal" class="stkModal" role="dialog" aria-modal="true" aria-labelledby="smBody">
@@ -2463,12 +2509,48 @@ if(SNAP){ loadHistory(); }
     try{ (lastFocus&&lastFocus.focus)?lastFocus.focus():input.focus(); }catch(e){} }
 
   // ══ 自選股：伺服器持久化 + localStorage 舊資料自動遷移 ══
+  const WATCH_DEFAULT_GROUP={id:'default',name:'未分類',sort_order:10000};
   const _readLocalWatch=()=>{ try{const x=JSON.parse(localStorage.getItem('dh_watch')||'[]');return Array.isArray(x)?x:[];}catch(e){return [];} };
-  let watchItems=_readLocalWatch(), watchRows=new Map(), watchReq=0;
+  const _readLocalGroups=()=>{ try{const x=JSON.parse(localStorage.getItem('dh_watch_groups')||'[]');return Array.isArray(x)&&x.length?x:[WATCH_DEFAULT_GROUP];}catch(e){return [WATCH_DEFAULT_GROUP];} };
+  let watchItems=_readLocalWatch().map(x=>({...x,group_id:x.group_id||'default'}));
+  let watchGroups=_readLocalGroups(), activeWatchGroup='all', watchRows=new Map(), watchReq=0, watchNoticeTimer=null;
   const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const getWatch=()=>watchItems.slice();
-  const saveLocalWatch=()=>localStorage.setItem('dh_watch',JSON.stringify(watchItems.map(x=>({code:x.code,name:x.name||''}))));
+  const saveLocalWatch=()=>localStorage.setItem('dh_watch',JSON.stringify(watchItems.map(x=>({code:x.code,name:x.name||'',group_id:x.group_id||'default'}))));
+  const saveLocalGroups=()=>localStorage.setItem('dh_watch_groups',JSON.stringify(watchGroups));
   const isWatched=code=>watchItems.some(w=>w.code===code);
+  const watchGroupName=id=>(watchGroups.find(g=>g.id===id)||WATCH_DEFAULT_GROUP).name;
+
+  function normalizeWatchGroups(groups){
+    const seen=new Set(), out=[];
+    (Array.isArray(groups)?groups:[]).forEach(g=>{if(!g||!g.id||seen.has(g.id)||g.id==='default')return;seen.add(g.id);out.push({id:g.id,name:g.name||g.id,sort_order:g.sort_order??out.length});});
+    out.sort((a,b)=>(a.sort_order??0)-(b.sort_order??0));out.push({...WATCH_DEFAULT_GROUP});return out;
+  }
+  watchGroups=normalizeWatchGroups(watchGroups);
+
+  function applyWatchSnapshot(j,render=true){
+    if(Array.isArray(j&&j.groups))watchGroups=normalizeWatchGroups(j.groups);
+    if(Array.isArray(j&&j.items))watchItems=j.items.map(x=>({...x,group_id:x.group_id||'default'}));
+    const groups=new Set(watchGroups.map(g=>g.id));
+    watchItems.forEach(x=>{if(!groups.has(x.group_id))x.group_id='default';const row=watchRows.get(x.code);if(row)row.group_id=x.group_id;});
+    if(activeWatchGroup!=='all'&&!groups.has(activeWatchGroup))activeWatchGroup='all';
+    saveLocalWatch();saveLocalGroups();
+    if(render){renderWatchStrip();renderWatchPage();if(document.getElementById('watchGroupModal')?.classList.contains('show'))renderWatchGroupManager();}
+  }
+
+  function setWatchGroupNotice(message,error=false){
+    const box=document.getElementById('watchGroupNotice');if(!box)return;
+    clearTimeout(watchNoticeTimer);box.textContent=message||'';box.classList.toggle('show',!!message);box.classList.toggle('err',!!error);
+    if(message)watchNoticeTimer=setTimeout(()=>box.classList.remove('show'),3600);
+  }
+
+  function renderWatchGroups(){
+    const box=document.getElementById('watchGroupTabs');if(!box)return;
+    const count=id=>id==='all'?watchItems.length:watchItems.filter(x=>(x.group_id||'default')===id).length;
+    const groups=[{id:'all',name:'全部'},...watchGroups];
+    box.innerHTML=groups.map(g=>`<button type="button" class="wl-group-tab${activeWatchGroup===g.id?' on':''}" data-watch-group-tab="${safe(g.id)}">${safe(g.name)}<span class="n">${count(g.id)}</span></button>`).join('');
+    box.querySelectorAll('[data-watch-group-tab]').forEach(btn=>btn.addEventListener('click',()=>{activeWatchGroup=btn.dataset.watchGroupTab;renderWatchPage();}));
+  }
 
   async function syncWatchlist(){
     const local=_readLocalWatch();
@@ -2480,18 +2562,18 @@ if(SNAP){ loadHistory(); }
       if(localStorage.getItem('dh_watch_server_migrated')!=='1'){
         for(const x of local){ if(!x||!x.code||by.has(x.code))continue;
           try{ const pr=await fetch('/api/watchlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(x)});
-            if(pr.ok)by.set(x.code,x); }catch(e){} }
+            if(pr.ok)by.set(x.code,{...x,group_id:x.group_id||'default'}); }catch(e){} }
         localStorage.setItem('dh_watch_server_migrated','1');
       }
-      watchItems=[...by.values()]; saveLocalWatch();
-    }catch(e){ watchItems=local; }
+      applyWatchSnapshot({groups:j.groups,items:[...by.values()]},false);
+    }catch(e){ watchItems=local.map(x=>({...x,group_id:x.group_id||'default'})); }
     renderWatchStrip(); renderWatchPage();
     if(watchItems.length) fetchWatchlistDetails();
   }
 
   async function toggleWatch(code,name){
     const i=watchItems.findIndex(x=>x.code===code), adding=i<0;
-    if(adding)watchItems.push({code,name:name||''}); else watchItems.splice(i,1);
+    if(adding)watchItems.push({code,name:name||'',group_id:'default'}); else watchItems.splice(i,1);
     saveLocalWatch(); renderWatchStrip(); renderWatchPage();
     const btn=document.getElementById('smStar'); if(btn){ const on=isWatched(code); btn.classList.toggle('on',on); btn.textContent=on?'★ 已加自選':'☆ 加入自選'; }
     try{
@@ -2500,11 +2582,64 @@ if(SNAP){ loadHistory(); }
         :{method:'DELETE'};
       const url='/api/watchlist'+(adding?'':'?code='+encodeURIComponent(code));
       const r=await fetch(url,opts); if(!r.ok)throw new Error('HTTP '+r.status);
-      const j=await r.json(); if(Array.isArray(j.items))watchItems=j.items;
-      saveLocalWatch();
+      const j=await r.json();applyWatchSnapshot(j,false);
     }catch(e){ /* 本機檔案模式仍保留 localStorage 清單 */ }
     if(adding)fetchWatchlistDetails(); else{watchRows.delete(code);renderWatchStrip();renderWatchPage();}
   }
+
+  async function watchlistMutation(url,options){
+    const r=await fetch(url,{cache:'no-store',headers:{'Content-Type':'application/json'},...options});
+    let j={};try{j=await r.json();}catch(e){}
+    if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+    applyWatchSnapshot(j,true);return j;
+  }
+
+  async function moveWatchItem(code,groupId,select){
+    const current=watchItems.find(x=>x.code===code), previous=current?.group_id||'default';
+    if(groupId===previous)return;
+    if(select)select.disabled=true;
+    try{
+      await watchlistMutation('/api/watchlist?code='+encodeURIComponent(code),{method:'PATCH',body:JSON.stringify({group_id:groupId})});
+      setWatchGroupNotice(`${current?.name||code} 已移至「${watchGroupName(groupId)}」`);
+    }catch(e){if(select){select.disabled=false;select.value=previous;}setWatchGroupNotice('移動分類失敗：'+e.message,true);}
+  }
+
+  const groupModal=document.getElementById('watchGroupModal'), groupClose=document.getElementById('watchGroupClose');
+  const groupNameInput=document.getElementById('watchGroupName'), groupError=document.getElementById('watchGroupError');
+  function openWatchGroupManager(focusNew=false){groupModal.classList.add('show');renderWatchGroupManager();if(focusNew)setTimeout(()=>groupNameInput.focus(),30);}
+  function closeWatchGroupManager(){groupModal.classList.remove('show');groupError.textContent='';groupNameInput.value='';}
+  function groupManagerError(message=''){groupError.textContent=message;}
+
+  function renderWatchGroupManager(){
+    const list=document.getElementById('watchGroupList');if(!list)return;
+    const count=id=>watchItems.filter(x=>(x.group_id||'default')===id).length;
+    list.innerHTML=watchGroups.map(g=>g.id==='default'
+      ?`<div class="wl-manage-row default"><input class="wl-manage-name" value="${safe(g.name)}" disabled><span class="count">${count(g.id)} 檔 · 保留分類</span></div>`
+      :`<div class="wl-manage-row" data-group-row="${safe(g.id)}"><input class="wl-manage-name" maxlength="24" value="${safe(g.name)}" aria-label="重新命名 ${safe(g.name)}"><button class="save" type="button" data-group-save="${safe(g.id)}">儲存名稱</button><button class="danger" type="button" data-group-delete="${safe(g.id)}">刪除</button><div class="wl-delete-confirm"><span>其中 ${count(g.id)} 檔會移至未分類。</span><button type="button" class="yes" data-group-delete-confirm="${safe(g.id)}">確認刪除</button><button type="button" data-group-delete-cancel>取消</button></div></div>`).join('');
+    list.querySelectorAll('[data-group-save]').forEach(btn=>btn.addEventListener('click',async()=>{
+      const row=btn.closest('[data-group-row]'),name=row.querySelector('input').value;btn.disabled=true;groupManagerError('');
+      try{await watchlistMutation('/api/watchlist/groups?id='+encodeURIComponent(btn.dataset.groupSave),{method:'PATCH',body:JSON.stringify({name})});setWatchGroupNotice('分類名稱已更新');}
+      catch(e){groupManagerError(e.message);btn.disabled=false;}
+    }));
+    list.querySelectorAll('[data-group-delete]').forEach(btn=>btn.addEventListener('click',()=>btn.closest('[data-group-row]').classList.add('confirming')));
+    list.querySelectorAll('[data-group-delete-cancel]').forEach(btn=>btn.addEventListener('click',()=>btn.closest('[data-group-row]').classList.remove('confirming')));
+    list.querySelectorAll('[data-group-delete-confirm]').forEach(btn=>btn.addEventListener('click',async()=>{
+      btn.disabled=true;groupManagerError('');
+      try{await watchlistMutation('/api/watchlist/groups?id='+encodeURIComponent(btn.dataset.groupDeleteConfirm),{method:'DELETE'});setWatchGroupNotice('分類已刪除，其中股票已移至未分類');}
+      catch(e){groupManagerError(e.message);btn.disabled=false;}
+    }));
+  }
+
+  document.getElementById('watchGroupCreate')?.addEventListener('click',async()=>{
+    const name=groupNameInput.value;groupManagerError('');
+    try{await watchlistMutation('/api/watchlist/groups',{method:'POST',body:JSON.stringify({name})});groupNameInput.value='';setWatchGroupNotice(`已新增分類「${name.trim()}」`);groupNameInput.focus();}
+    catch(e){groupManagerError(e.message);}
+  });
+  groupNameInput?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();document.getElementById('watchGroupCreate').click();}});
+  document.getElementById('watchGroupAdd')?.addEventListener('click',()=>openWatchGroupManager(true));
+  document.getElementById('watchGroupManage')?.addEventListener('click',()=>openWatchGroupManager(false));
+  groupClose?.addEventListener('click',closeWatchGroupManager);
+  groupModal?.addEventListener('click',e=>{if(e.target===groupModal)closeWatchGroupManager();});
 
   function renderWatchStrip(){
     const strip=document.getElementById('watchStrip'); if(!strip) return;
@@ -2524,6 +2659,8 @@ if(SNAP){ loadHistory(); }
     const side=s.side||s.signal, sideText=side==='long'?'做多訊號':side==='short'?'做空／減碼':'等待確認';
     const st=s.st==='UP'?'多方':s.st==='DOWN'?'空方':'中性';
     const health=s.health||{}, grade=health.grade||'—', overall=health.overall;
+    const groupId=s.group_id||'default';
+    const groupOptions=watchGroups.map(g=>`<option value="${safe(g.id)}"${g.id===groupId?' selected':''}>${safe(g.name)}</option>`).join('');
     const maGap=(s.price!=null&&s.ma20)?((s.price/s.ma20-1)*100):null;
     const plan=(s.stop!=null||s.tp1!=null)?`<div class="wl-plan"><span>停損 <b style="color:var(--dn)">${s.stop??'—'}</b></span><span>目標一 <b style="color:var(--up)">${s.tp1??'—'}</b></span><span>目標二 <b style="color:var(--up)">${s.tp2??'—'}</b></span></div>`:'';
     const metric=(k,v,col)=>`<div class="wl-metric"><div class="k">${k}</div><div class="v"${col?` style="color:${col}"`:''}>${v}</div></div>`;
@@ -2536,7 +2673,7 @@ if(SNAP){ loadHistory(); }
     })();
     return `<article class="wl-card ${side||''}" data-watch-open="${safe(s.code)}">`+
       `<button class="wl-remove" data-unwatch="${safe(s.code)}" title="移除自選股" aria-label="移除 ${safe(s.name||s.code)}">×</button>`+
-      `<div class="wl-top"><div><div class="wl-code">${safe(s.code)}</div><div class="wl-name">${safe(s.name||s.code)}</div><div class="wl-ind">${safe(s.industry||'')}</div></div>`+
+      `<div class="wl-top"><div><div class="wl-code">${safe(s.code)}</div><div class="wl-name">${safe(s.name||s.code)}</div><div class="wl-meta"><span class="wl-ind">${safe(s.industry||'')}</span><select class="wl-card-group" data-watch-group-select="${safe(s.code)}" aria-label="${safe(s.name||s.code)} 的自選股分類">${groupOptions}</select></div></div>`+
       `<div class="wl-quote"><div class="wl-price" style="color:${dirHex(s.chg)}">${s.price??'—'}</div><div class="wl-chg" style="color:${chgColor(s.chg)}">${s.chg!=null?sign(s.chg)+'%':'—'}</div></div></div>`+
       `<div class="wl-verdict"><span class="wl-pill ${side||''}">${sideText}</span><span class="wl-pill">趨勢 ${st}</span>`+
       `<span class="wl-pill">健診 ${grade}${overall!=null?' · '+wlNum(overall,0):''}</span><span class="wl-pill">強弱 ${s.score??'—'}</span></div>`+
@@ -2550,15 +2687,20 @@ if(SNAP){ loadHistory(); }
 
   function renderWatchPage(error){
     const cards=document.getElementById('watchCards'), sum=document.getElementById('watchSummary'); if(!cards||!sum)return;
-    const rows=watchItems.map(x=>watchRows.get(x.code)||{...x,ok:false});
-    if(!rows.length){ sum.innerHTML=''; cards.innerHTML='<div class="wl-empty" style="grid-column:1/-1"><b>尚無自選股</b>從上方搜尋個股，進入詳情後按「☆ 加入自選」。</div>';return; }
+    renderWatchGroups();
+    const allRows=watchItems.map(x=>{const row=watchRows.get(x.code);return row?{...row,group_id:x.group_id||row.group_id||'default'}:{...x,ok:false};});
+    const rows=activeWatchGroup==='all'?allRows:allRows.filter(x=>(x.group_id||'default')===activeWatchGroup);
     const valid=rows.filter(x=>x.price!=null), ups=valid.filter(x=>x.chg>0).length, downs=valid.filter(x=>x.chg<0).length;
     const longs=valid.filter(x=>(x.side||x.signal)==='long').length, shorts=valid.filter(x=>(x.side||x.signal)==='short').length;
     const avg=valid.length?valid.reduce((a,x)=>a+(Number(x.chg)||0),0)/valid.length:null;
     const sbox=(k,v,col)=>`<div class="wl-sum"><div class="k">${k}</div><div class="v"${col?` style="color:${col}"`:''}>${v}</div></div>`;
     sum.innerHTML=sbox('自選檔數',rows.length)+sbox('上漲／下跌',`${ups} / ${downs}`)+sbox('平均漲跌',avg==null?'—':sign(Number(avg.toFixed(2)))+'%',avg==null?null:chgColor(avg))+sbox('做多訊號',longs,'var(--up)')+sbox('做空訊號',shorts,'var(--dn)');
-    cards.innerHTML=rows.map(watchCard).join('')+(error?`<div class="wl-error" style="grid-column:1/-1">${safe(error)}</div>`:'');
+    const empty=!watchItems.length
+      ?'<div class="wl-empty" style="grid-column:1/-1"><b>尚無自選股</b>從上方搜尋個股，進入詳情後按「☆ 加入自選」。</div>'
+      :`<div class="wl-empty" style="grid-column:1/-1"><b>「${safe(watchGroupName(activeWatchGroup))}」目前沒有股票</b>可在任一自選股卡片的分類選單中移入。</div>`;
+    cards.innerHTML=(rows.length?rows.map(watchCard).join(''):empty)+(error?`<div class="wl-error" style="grid-column:1/-1">${safe(error)}</div>`:'');
     cards.querySelectorAll('[data-unwatch]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();toggleWatch(el.dataset.unwatch);}));
+    cards.querySelectorAll('[data-watch-group-select]').forEach(el=>{el.addEventListener('click',e=>e.stopPropagation());el.addEventListener('change',e=>{e.stopPropagation();moveWatchItem(el.dataset.watchGroupSelect,el.value,el);});});
     cards.querySelectorAll('[data-watch-open]').forEach(el=>el.addEventListener('click',()=>pick(el.dataset.watchOpen)));
   }
 
@@ -2569,7 +2711,7 @@ if(SNAP){ loadHistory(); }
       const j=await r.json(); if(seq!==watchReq)return;
       const rows=Array.isArray(j.items)?j.items:[]; watchRows=new Map(rows.map(x=>[x.code,x]));
       rows.forEach(x=>{if(x&&x.code)regDrill(x);});
-      if(rows.length){watchItems=rows.map(x=>({code:x.code,name:x.name||x.code,added_at:x.added_at}));saveLocalWatch();}
+      applyWatchSnapshot({groups:j.groups,items:rows.map(x=>({code:x.code,name:x.name||x.code,added_at:x.added_at,group_id:x.group_id||'default'}))},false);
       const up=document.getElementById('watchUpdated'); if(up)up.textContent='更新 '+(j.updated_at||new Date().toLocaleTimeString('zh-TW',{hour12:false}));
       renderWatchStrip();renderWatchPage();
     }catch(e){if(seq===watchReq)renderWatchPage('即時資料更新失敗，保留上次資料。');}
@@ -3126,7 +3268,8 @@ if(SNAP){ loadHistory(); }
   modal.addEventListener('click',e=>{ if(e.target===modal) closeModal(); });
   document.addEventListener('keydown',e=>{
     if(e.key!=='Escape') return;
-      if(modal.classList.contains('show')) closeModal();
+      if(groupModal.classList.contains('show')) closeWatchGroupManager();
+      else if(modal.classList.contains('show')) closeModal();
       else if(drop.classList.contains('show')) hideDrop();
   });
   syncWatchlist();

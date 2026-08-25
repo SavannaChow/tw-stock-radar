@@ -114,7 +114,7 @@ Classic setup: retail outflow (TDCC) + institutional accumulation (T86 streak) +
 
 ### 📊 Dark HUD Dashboard — 5 tabs <a id="dashboard"></a>
 
-- **Watchlist** — server-persisted picks with live quote, volume, chips, and an at-a-glance five-part risk screen for liquidity, volatility, chase risk, positioning, and fundamentals; missing data is never treated as safe
+- **Watchlist** — server-persisted picks and custom groups, with live quote, volume, chips, and an at-a-glance five-part risk screen for liquidity, volatility, chase risk, positioning, and fundamentals; missing data is never treated as safe
 - **Radar** — temperature gauge, animated three.js reactor orb, sector heat flow, live signal cards with stop/TP
 - **Sectors** — capital flow treemap (area = stock count, color = return)
 - **Chips Flow** — T86 net buy rankings, trust accumulation list, margin hot list, TDCC retail-exit leaderboard
@@ -130,7 +130,7 @@ Built with vanilla JS + three.js. No framework, no build step. Single self-conta
 - Candlestick with MA, daily / weekly / monthly views
 - Fundamentals: EPS (TTM + quarterly) · revenue YoY/MoM · gross/operating margins · P/E · P/B · dividend yield · ex-date · ROE
 - **Four AI Teachers** (optional API key) — per-stock deep-dive in 4 Taiwan trading methodologies with entry zone + step-by-step playbook
-- Google News RSS · watchlist (★) · price alerts — all in localStorage, live refresh
+- Google News RSS · server-persisted watchlist and groups (★) · browser-local price alerts · live refresh
 
 ### 🤖 Four AI Teachers <a id="four-ai-teachers"></a>
 
