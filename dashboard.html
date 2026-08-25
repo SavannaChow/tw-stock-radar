@@ -1099,22 +1099,21 @@
 
   <!-- 主分頁 -->
   <div class="tabs">
-    <div class="tab active" data-v="board">看板 · LIVE</div>
-    <div class="tab" data-v="watch">自選股 · WATCHLIST</div>
-    <div class="tab" data-v="guide">指標解釋 · GUIDE</div>
-    <div class="tab" data-v="heat">板塊熱流 · FLOW MAP</div>
-    <div class="tab" data-v="chips">法人資金流向 · INSTITUTIONS</div>
-    <div class="tab" data-v="zones">交易專區 · TRADE ZONES</div>
-    <div class="tab" data-v="track">實盤戰績 · TRACK RECORD</div>
-    <div class="tab" data-v="history">歷史訊號 · TIMELINE</div>
+    <div class="tab active" data-v="board">看板</div>
+    <div class="tab" data-v="watch">自選股</div>
+    <div class="tab" data-v="guide">指標解釋</div>
+    <div class="tab" data-v="heat">板塊熱流</div>
+    <div class="tab" data-v="chips">法人資金流向</div>
+    <div class="tab" data-v="zones">交易專區</div>
+    <div class="tab" data-v="track">實盤戰績</div>
+    <div class="tab" data-v="history">歷史訊號</div>
   </div>
 
   <!-- ════ 自選股獨立 view ════ -->
   <div class="view" data-view="watch">
     <section class="panel">
       <div class="wl-head">
-        <div><div class="wl-title">我的自選股</div>
-          <div class="wl-desc">集中檢視今日漲跌、量價、籌碼與五面向風險快篩。燈號用來排除風險，不代表買賣建議；點卡片可開啟既有完整分析。</div></div>
+        <div><div class="wl-title">自選股</div></div>
         <div class="wl-actions"><span class="wl-updated" id="watchUpdated">尚未更新</span>
           <button class="wl-refresh" id="watchRefresh" type="button">↻ 更新即時資料</button></div>
       </div>
@@ -2857,7 +2856,7 @@ if(SNAP){ loadHistory(); }
       if(!risk||!Array.isArray(risk.categories)) return `<section class="wl-risk unknown"><div class="wl-risk-head"><span>風險快篩</span><b>資料不足</b></div><div class="wl-risk-reasons"><span class="wl-risk-reason">風險資料尚未完成，不能視為低風險</span></div></section>`;
       const reasons=(risk.reasons||[]).map(x=>`<span class="wl-risk-reason">${safe(x)}</span>`).join('');
       const cats=risk.categories.map(c=>`<div class="wl-risk-cat ${safe(c.level||'unknown')}"><div class="h"><span class="dot"></span><span>${safe(c.label||'')}</span></div><div class="s">${safe(c.summary||'—')}</div></div>`).join('');
-      return `<section class="wl-risk ${safe(risk.level||'unknown')}"><div class="wl-risk-head"><span>五面向風險快篩</span><span class="wl-risk-note">不是買賣建議</span><b>${safe(risk.label||'資料不足')}</b></div>${reasons?`<div class="wl-risk-reasons">${reasons}</div>`:''}<div class="wl-risk-cats">${cats}</div></section>`;
+      return `<section class="wl-risk ${safe(risk.level||'unknown')}"><div class="wl-risk-head"><span>五面向風險快篩</span><b>${safe(risk.label||'資料不足')}</b></div>${reasons?`<div class="wl-risk-reasons">${reasons}</div>`:''}<div class="wl-risk-cats">${cats}</div></section>`;
     })();
     return `<article class="wl-card ${side||''}" data-watch-open="${safe(s.code)}">`+
       `<button class="wl-remove" data-unwatch="${safe(s.code)}" title="移除自選股" aria-label="移除 ${safe(s.name||s.code)}">×</button>`+
