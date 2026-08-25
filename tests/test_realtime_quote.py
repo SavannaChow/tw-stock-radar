@@ -6,6 +6,9 @@ test_realtime_quote.py — 即時五檔解析(realtime_quote)純函式測試(不
 import sys
 import unittest
 from pathlib import Path
+from datetime import datetime
+
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _util  # noqa: E402
@@ -67,6 +70,28 @@ class TestParse(unittest.TestCase):
         q = rq._parse(m)
         self.assertIsNone(q["chg"])
         self.assertIsNone(q["chg_pct"])
+
+
+class TestIntradayFallback(unittest.TestCase):
+    def test_intraday_payload_converts_shares_to_lots(self):
+        idx = pd.to_datetime([datetime(2026, 8, 25, 9, 0), datetime(2026, 8, 25, 9, 1)])
+        frame = pd.DataFrame({
+            "Open": [100.0, 101.0], "High": [102.0, 103.0],
+            "Low": [99.0, 100.0], "Close": [101.0, 102.5],
+            "Volume": [12000, 8500],
+        }, index=idx)
+        q = rq._intraday_payload("0050", frame)
+        self.assertEqual(q["open"], 100.0)
+        self.assertEqual(q["high"], 103.0)
+        self.assertEqual(q["low"], 99.0)
+        self.assertEqual(q["price"], 102.5)
+        self.assertEqual(q["volume"], 20)
+        self.assertEqual(q["source"], "yfinance_1m")
+        self.assertTrue(q["delayed"])
+
+    def test_intraday_payload_empty_frame_returns_none(self):
+        frame = pd.DataFrame(columns=["Open", "High", "Low", "Close", "Volume"])
+        self.assertIsNone(rq._intraday_payload("0050", frame))
 
 
 if __name__ == "__main__":

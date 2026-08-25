@@ -2659,6 +2659,7 @@ if(SNAP){ loadHistory(); }
     const side=s.side||s.signal, sideText=side==='long'?'做多訊號':side==='short'?'做空／減碼':'等待確認';
     const st=s.st==='UP'?'多方':s.st==='DOWN'?'空方':'中性';
     const health=s.health||{}, grade=health.grade||'—', overall=health.overall;
+    const delayedQuote=s.quote_delayed?'<span class="wl-pill">延遲行情</span>':'';
     const groupId=s.group_id||'default';
     const groupOptions=watchGroups.map(g=>`<option value="${safe(g.id)}"${g.id===groupId?' selected':''}>${safe(g.name)}</option>`).join('');
     const maGap=(s.price!=null&&s.ma20)?((s.price/s.ma20-1)*100):null;
@@ -2676,7 +2677,7 @@ if(SNAP){ loadHistory(); }
       `<div class="wl-top"><div><div class="wl-code">${safe(s.code)}</div><div class="wl-name">${safe(s.name||s.code)}</div><div class="wl-meta"><span class="wl-ind">${safe(s.industry||'')}</span><select class="wl-card-group" data-watch-group-select="${safe(s.code)}" aria-label="${safe(s.name||s.code)} 的自選股分類">${groupOptions}</select></div></div>`+
       `<div class="wl-quote"><div class="wl-price" style="color:${dirHex(s.chg)}">${s.price??'—'}</div><div class="wl-chg" style="color:${chgColor(s.chg)}">${s.chg!=null?sign(s.chg)+'%':'—'}</div></div></div>`+
       `<div class="wl-verdict"><span class="wl-pill ${side||''}">${sideText}</span><span class="wl-pill">趨勢 ${st}</span>`+
-      `<span class="wl-pill">健診 ${grade}${overall!=null?' · '+wlNum(overall,0):''}</span><span class="wl-pill">強弱 ${s.score??'—'}</span></div>`+
+      `<span class="wl-pill">健診 ${grade}${overall!=null?' · '+wlNum(overall,0):''}</span><span class="wl-pill">強弱 ${s.score??'—'}</span>${delayedQuote}</div>`+
       `<div class="wl-metrics">${metric('今開',wlNum(s.open,2))}${metric('最高',wlNum(s.high,2),'var(--up)')}${metric('最低',wlNum(s.low,2),'var(--dn)')}${metric('成交量',wlInt(s.volume)+' 張')}`+
       `${metric('RSI',wlNum(s.rsi,1),s.rsi>=70?'var(--up)':s.rsi<=30?'var(--dn)':null)}${metric('MA20乖離',maGap==null?'—':sign(Number(maGap.toFixed(1)))+'%',maGap==null?null:chgColor(maGap))}`+
       `${metric('ADX',wlNum(s.adx,1),s.adx>=25?'var(--gold)':null)}${metric('相對量',s.relvol==null?'—':wlNum(s.relvol,1)+'x',s.relvol>=1.5?'var(--gold)':null)}`+

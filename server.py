@@ -91,12 +91,17 @@ class Handler(SimpleHTTPRequestHandler):
             row["added_at"] = item.get("added_at")
             row["group_id"] = item.get("group_id") or watchlist.DEFAULT_GROUP_ID
             quote = realtime_quote.fetch_quote(code) if (live and realtime_quote) else None
+            # Synology／部分機房可能被 MIS 主動斷線；退回 yfinance 1 分 K 的延遲
+            # OHLCV。沒有五檔時不偽造價差，且保留歷史分析已有的漲跌幅。
+            if live and realtime_quote and not quote:
+                quote = realtime_quote.fetch_intraday_quote(code)
             if quote:
+                quote_chg = quote.get("chg_pct")
                 row.update({
                     "ok": True,
                     "name": quote.get("name") or row.get("name"),
-                    "price": quote.get("price"),
-                    "chg": quote.get("chg_pct"),
+                    "price": quote.get("price") if quote.get("price") is not None else row.get("price"),
+                    "chg": quote_chg if quote_chg is not None else row.get("chg"),
                     "open": quote.get("open"),
                     "high": quote.get("high"),
                     "low": quote.get("low"),
@@ -106,6 +111,8 @@ class Handler(SimpleHTTPRequestHandler):
                     "traded": quote.get("traded"),
                     "bid": quote.get("bid"),
                     "ask": quote.get("ask"),
+                    "quote_source": quote.get("source") or "twse_mis",
+                    "quote_delayed": bool(quote.get("delayed")),
                 })
             row.update(risk_mod.quote_metrics(row))
             row["watch_risk"] = risk_mod.assess(row)

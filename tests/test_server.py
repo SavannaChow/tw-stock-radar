@@ -106,6 +106,30 @@ class TestWatchlistGroupAPI(unittest.TestCase):
         self.assertEqual(payload["groups"][0]["name"], "記憶體股")
         self.assertEqual(payload["groups"][-1]["id"], watchlist.DEFAULT_GROUP_ID)
 
+    def test_live_watchlist_uses_delayed_ohlcv_when_mis_fails(self):
+        watchlist.add("0050", "元大台灣50")
+        fallback = {
+            "price": 103.75, "chg_pct": None,
+            "open": 104.0, "high": 104.2, "low": 103.5, "volume": 12345,
+            "prev_close": None, "time": "13:14:00", "traded": True,
+            "bid": [], "ask": [], "source": "yfinance_1m", "delayed": True,
+        }
+        base = {"ok": True, "code": "0050", "name": "元大台灣50",
+                "price": 103.8, "chg": -0.81}
+        with patch("query.analyze_stock", return_value=base), \
+             patch("realtime_quote.fetch_quote", return_value=None), \
+             patch("realtime_quote.fetch_intraday_quote", return_value=fallback), \
+             patch("risk.quote_metrics", return_value={}), \
+             patch("risk.assess", return_value={}):
+            payload = server.Handler._watchlist_payload(_FakeHandler("/api/watchlist"),
+                                                        details=True, live=True)
+        row = payload["items"][0]
+        self.assertEqual(row["open"], 104.0)
+        self.assertEqual(row["volume"], 12345)
+        self.assertEqual(row["chg"], -0.81)  # 備援沒有昨收時保留既有漲跌幅
+        self.assertEqual(row["quote_source"], "yfinance_1m")
+        self.assertTrue(row["quote_delayed"])
+
 
 if __name__ == "__main__":
     unittest.main()

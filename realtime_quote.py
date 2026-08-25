@@ -18,6 +18,7 @@ import ssl
 import sys
 import urllib.request
 from datetime import datetime
+import time
 
 _CTX = ssl.create_default_context()
 _CTX.check_hostname = False
@@ -106,15 +107,50 @@ def fetch_quote(code: str, timeout: int = 8) -> dict | None:
     return _parse(valid[0])
 
 
-_INTRA_CACHE: dict = {}          # code → (monotonic_ts, closes)；分時 yfinance 較慢，60 秒快取省重抓
+_INTRA_CACHE: dict = {}          # code → (monotonic_ts, payload)；分時 yfinance 較慢，60 秒快取省重抓
 
 
-def fetch_intraday(code: str) -> list | None:
-    """今日分時走勢：yfinance 1 分K 收盤序列(約延遲15分，給分時線)。上市→.TW 上櫃→.TWO 自動試。
-    60 秒快取：分時本就延遲，重開同檔不必重抓。"""
-    import time as _t
+def _intraday_payload(code: str, frame) -> dict | None:
+    """把 yfinance 1 分 K 整理成 MIS 失敗時可用的延遲 OHLCV 備援。"""
+    try:
+        data = frame.dropna(subset=["Close"])
+        if data.empty:
+            return None
+        close = data["Close"].astype(float)
+        open_s = data["Open"].astype(float).dropna()
+        high_s = data["High"].astype(float).dropna()
+        low_s = data["Low"].astype(float).dropna()
+        volume_s = data["Volume"].astype(float).fillna(0)
+        price = float(close.iloc[-1])
+        ts = data.index[-1]
+        return {
+            "code": code,
+            "name": None,
+            "price": round(price, 2),
+            "prev_close": None,
+            "chg": None,
+            "chg_pct": None,
+            "open": round(float(open_s.iloc[0]), 2) if len(open_s) else round(price, 2),
+            "high": round(float(high_s.max()), 2) if len(high_s) else round(price, 2),
+            "low": round(float(low_s.min()), 2) if len(low_s) else round(price, 2),
+            # yfinance 為股，卡片與 MIS 契約為張。
+            "volume": int(round(float(volume_s.sum()) / 1000.0)),
+            "tick_vol": 0,
+            "ask": [],
+            "bid": [],
+            "time": ts.strftime("%H:%M:%S") if hasattr(ts, "strftime") else None,
+            "traded": bool(float(volume_s.sum()) > 0),
+            "source": "yfinance_1m",
+            "delayed": True,
+            "_closes": [round(float(x), 2) for x in close.tolist()],
+        }
+    except Exception:
+        return None
+
+
+def _fetch_intraday_payload(code: str) -> dict | None:
     hit = _INTRA_CACHE.get(code)
-    if hit and (_t.monotonic() - hit[0]) < 60:
+    if hit and (time.monotonic() - hit[0]) < 60:
         return hit[1]
     try:
         import warnings
@@ -124,14 +160,30 @@ def fetch_intraday(code: str) -> list | None:
         return None
     for suf in (".TW", ".TWO"):
         try:
-            h = yf.Ticker(code + suf).history(period="1d", interval="1m")
-            closes = [round(float(x), 2) for x in h["Close"].dropna().tolist()]
-            if len(closes) >= 2:
-                _INTRA_CACHE[code] = (_t.monotonic(), closes)
-                return closes
+            h = yf.Ticker(code + suf).history(period="1d", interval="1m", timeout=8)
+            payload = _intraday_payload(code, h)
+            if payload and len(payload["_closes"]) >= 1:
+                _INTRA_CACHE[code] = (time.monotonic(), payload)
+                return payload
         except Exception:
             continue
     return None
+
+
+def fetch_intraday_quote(code: str) -> dict | None:
+    """MIS 被拒時的延遲 OHLCV 備援；不提供五檔，也不冒充即時行情。"""
+    payload = _fetch_intraday_payload(code)
+    if not payload:
+        return None
+    return {k: v for k, v in payload.items() if k != "_closes"}
+
+
+def fetch_intraday(code: str) -> list | None:
+    """今日分時走勢：yfinance 1 分K 收盤序列(約延遲15分，給分時線)。上市→.TW 上櫃→.TWO 自動試。
+    60 秒快取：分時本就延遲，重開同檔不必重抓。"""
+    payload = _fetch_intraday_payload(code)
+    closes = payload.get("_closes") if payload else None
+    return closes if closes and len(closes) >= 2 else None
 
 
 # ── 大盤主要指數群(證交所 MIS) + 國際指數(yfinance) ──────────────────────────
