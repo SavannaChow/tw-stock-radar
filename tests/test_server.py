@@ -61,6 +61,41 @@ class TestRuntimeFileErrors(unittest.TestCase):
         self.assertIn("尚無資料", handler.wfile.getvalue().decode("utf-8"))
 
 
+class TestSectorMembersAPI(unittest.TestCase):
+    def test_returns_only_requested_sector(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sector_members.json"
+            path.write_text(json.dumps({
+                "ok": True,
+                "updated_at": "2026-08-25T13:30:00",
+                "sectors": {
+                    "半導體": [{"code": "2330", "name": "台積電", "score": 70}],
+                    "航運": [{"code": "2603", "name": "長榮", "score": 60}],
+                },
+            }, ensure_ascii=False), encoding="utf-8")
+            with patch.object(server, "SECTOR_MEMBERS_FILE", path):
+                handler = _FakeHandler("/api/sector?name=半導體")
+                handled = server.Handler._handle_api(handler, "/api/sector", {"name": ["半導體"]})
+
+        payload = json.loads(handler.wfile.getvalue().decode("utf-8"))
+        self.assertTrue(handled)
+        self.assertEqual(handler.status, 200)
+        self.assertEqual(payload["name"], "半導體")
+        self.assertEqual(payload["count"], 1)
+        self.assertEqual(payload["members"][0]["code"], "2330")
+        self.assertNotIn("航運", json.dumps(payload, ensure_ascii=False))
+
+    def test_missing_sector_file_returns_helpful_404(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch.object(server, "SECTOR_MEMBERS_FILE", Path(tmp) / "missing.json"):
+                handler = _FakeHandler("/api/sector?name=半導體")
+                server.Handler._handle_api(handler, "/api/sector", {"name": ["半導體"]})
+
+        payload = json.loads(handler.wfile.getvalue().decode("utf-8"))
+        self.assertEqual(handler.status, 404)
+        self.assertIn("請先執行掃描", payload["error"])
+
+
 class TestWatchlistGroupAPI(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

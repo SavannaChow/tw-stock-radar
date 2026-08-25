@@ -315,6 +315,41 @@
   .sfill.neg{right:50%;border-radius:7px 0 0 7px}
   .schg{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums;font-weight:700;font-size:13px}
   .sleader{grid-column:2/4;font-size:11px;color:var(--dim);margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .sector[data-sector-open]{cursor:pointer;border-radius:var(--r-sm);padding:5px 7px;margin:3px -7px;transition:background .15s,transform .15s}
+  .sector[data-sector-open]:hover,.sector[data-sector-open]:focus-visible{background:rgba(90,147,189,.075);transform:translateY(-1px);outline:none}
+  .sector-open-mark{font-family:var(--mono);font-size:15px;color:var(--acc2);margin-left:5px;opacity:.8}
+
+  /* 看板產業列 → 完整產業成員 modal（獨立按需載入，不撐高看板） */
+  .sector-modal{position:fixed;inset:0;z-index:95;display:none;align-items:flex-start;justify-content:center;padding:42px 16px;background:rgba(3,7,14,.74);backdrop-filter:blur(4px);overflow-y:auto}
+  .sector-modal.show{display:flex;animation:smfade .18s ease}
+  .sector-dialog{position:relative;width:100%;max-width:840px;background:var(--panel);border:1px solid var(--line2);border-radius:15px;padding:20px;box-shadow:var(--bevel),var(--depth)}
+  .sector-close{position:absolute;right:13px;top:12px;width:32px;height:32px;border:1px solid var(--line2);border-radius:8px;background:rgba(255,255,255,.03);color:var(--dim);font-size:20px;cursor:pointer}
+  .sector-close:hover{color:var(--txt);border-color:var(--acc)}
+  .sector-modal-title{font-family:var(--ttl);font-size:23px;font-weight:680;padding-right:42px}
+  .sector-modal-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:8px 0 14px;color:var(--dim);font-size:12px}
+  .sector-modal-meta span{border:1px solid var(--line);border-radius:999px;padding:3px 8px}
+  .sector-sortbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+  .sector-sort-label{font-family:var(--mono);font-size:11px;color:var(--faint);margin-right:2px}
+  .sector-sort{border:1px solid var(--line);border-radius:7px;background:rgba(255,255,255,.025);color:var(--dim);font-family:var(--tc);font-size:12px;padding:5px 9px;cursor:pointer}
+  .sector-sort:hover,.sector-sort.on{border-color:var(--acc);color:var(--acc2);background:rgba(90,147,189,.10)}
+  .sector-member-box{border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+  .sector-member-head,.sector-member{display:grid;grid-template-columns:minmax(150px,1.5fr) 82px 72px 70px 64px 62px;gap:8px;align-items:center;padding:8px 11px}
+  .sector-member-head{font-family:var(--mono);font-size:10.5px;color:var(--faint);letter-spacing:.5px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--line)}
+  .sector-member-list{max-height:min(58vh,560px);overflow-y:auto}
+  .sector-member{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--txt);font-family:var(--tc);font-size:12.5px;text-align:left;cursor:pointer}
+  .sector-member:last-child{border-bottom:0}.sector-member:nth-child(even){background:rgba(255,255,255,.018)}
+  .sector-member:hover,.sector-member:focus-visible{background:rgba(90,147,189,.08);outline:none}
+  .sector-member-id{min-width:0}.sector-member-id b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sector-member-id small{font-family:var(--mono);color:var(--dim);font-size:10.5px}
+  .sector-member-num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+  .sector-member-state{text-align:center;font-family:var(--mono);font-size:11px}
+  .sector-member-loading,.sector-member-error{padding:34px 14px;text-align:center;color:var(--dim);font-size:13px}.sector-member-error{color:var(--up)}
+  @media(max-width:620px){
+    .sector-modal{padding:14px 8px;align-items:flex-start}.sector-dialog{padding:16px 12px;border-radius:13px}
+    .sector-modal-title{font-size:20px}.sector-member-head,.sector-member{grid-template-columns:minmax(112px,1fr) 66px 58px;padding:8px 8px;gap:6px}
+    .sector-member-head>:nth-child(2),.sector-member-head>:nth-child(5),.sector-member-head>:nth-child(6),
+    .sector-member>.sector-member-price,.sector-member>.sector-member-rsi,.sector-member>.sector-member-state{display:none}
+    .sector-member-list{max-height:68vh}
+  }
 
   /* ════ lists ════ */
   .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -1065,7 +1100,8 @@
     .guide-detail-block,.tk,.sigcard,.wrow,.jbar,.trackList .th,.trkrow:nth-child(even),.chipBoard,
     .chiprow:nth-child(odd),.mghead,.mgrow:nth-child(even),.rthead,.rtrow:nth-child(even),.search,
     .smClose,.smNote,.sm-act,.hz,.team-view,.strat-card,.opzone-hd,.pb-price,.tog,
-    .wl-group-tab,.wl-group-action,.wl-manage-row,.wl-group-close,.wl-group-new button,.wl-manage-row button){
+    .wl-group-tab,.wl-group-action,.wl-manage-row,.wl-group-close,.wl-group-new button,.wl-manage-row button,
+    .sector-close,.sector-sort,.sector-member-head,.sector-member:nth-child(even)){
     background-color:rgba(37,76,111,.035);
   }
   html[data-theme="light"] :is(.tab:hover,.ws-item:hover,.wl-card:hover,.guide-card:hover,.row:hover,.wrow:hover,
@@ -1077,7 +1113,7 @@
     .smKwrap,.fv-intra,.fv-body,.smStat,.team-zone,.opzone,.opz-cell){background:#f4f7fa}
   html[data-theme="light"] :is(.wl-group-new input,.wl-manage-name,.sm-alert input){background:#fff;color:var(--txt)}
   html[data-theme="light"] :is(#pop,.acDrop){background:rgba(255,255,255,.99)}
-  html[data-theme="light"] :is(.wl-group-modal,.guide-modal,.stkModal,.term-help-modal){background:rgba(35,49,65,.38)}
+  html[data-theme="light"] :is(.wl-group-modal,.guide-modal,.stkModal,.term-help-modal,.sector-modal){background:rgba(35,49,65,.38)}
   html[data-theme="light"] :is(.chipBoardHdr,.marginHdr){background:linear-gradient(160deg,#edf4fa,#f8fafc)}
   html[data-theme="light"] :is(.segbar i:not(.up):not(.dn),.sbar,.zbar-wrap,.zdt-cell,.zlt-cell,.fv-bar,.sd-sbar){background:rgba(47,73,99,.10)}
   html[data-theme="light"] :is(.hsort,.sector-drill){background:#f7f9fb;border-color:var(--line2)}
@@ -1480,6 +1516,26 @@
   </div>
 </div>
 
+<!-- 看板產業板塊完整成員（按需讀取 sector_members.json，不增加主狀態輪詢負擔） -->
+<div id="sectorModal" class="sector-modal" role="dialog" aria-modal="true" aria-labelledby="sectorModalTitle">
+  <div class="sector-dialog">
+    <button class="sector-close" id="sectorModalClose" type="button" aria-label="關閉產業股票清單" title="關閉 (ESC)">×</button>
+    <h3 class="sector-modal-title" id="sectorModalTitle">產業股票</h3>
+    <div class="sector-modal-meta" id="sectorModalMeta"></div>
+    <div class="sector-sortbar" id="sectorSortbar">
+      <span class="sector-sort-label">排序</span>
+      <button class="sector-sort on" type="button" data-sector-sort="score">強弱分</button>
+      <button class="sector-sort" type="button" data-sector-sort="gain">漲幅</button>
+      <button class="sector-sort" type="button" data-sector-sort="loss">跌幅</button>
+      <button class="sector-sort" type="button" data-sector-sort="code">代號</button>
+    </div>
+    <div class="sector-member-box">
+      <div class="sector-member-head"><span>股票</span><span style="text-align:right">股價</span><span style="text-align:right">漲跌</span><span style="text-align:right">強弱分</span><span style="text-align:right">RSI</span><span style="text-align:center">趨勢</span></div>
+      <div class="sector-member-list" id="sectorMemberList"><div class="sector-member-loading">載入中…</div></div>
+    </div>
+  </div>
+</div>
+
 <!-- 指標詳解 modal（只服務指標解釋頁，不連動自選股或個股詳情） -->
 <div id="guideModal" class="guide-modal" role="dialog" aria-modal="true" aria-labelledby="guideModalTitle" aria-describedby="guideModalSummary">
   <div class="guide-dialog">
@@ -1598,6 +1654,7 @@
 
 <script>
 const $=s=>document.querySelector(s);
+const htmlSafe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const params=new URLSearchParams(location.search);
 const MOCK=params.get('mock')==='1';
 // 快照模式：?snapshot=1 看板(原) / chips 法人 / track 戰績 / flow 板塊treemap（主題單圖海報）
@@ -2308,10 +2365,10 @@ async function load(){
       const scoreCol=(s.score||0)>=60?'#00d478':(s.score||0)>=40?'#ffc832':'#ff6060';
       const sigBadge=(s.signal_count>0)?`<span class="chip" style="color:#00d478">▲買${s.signal_count}</span>`:'';
       const stBadge=(s.st_up_count>0)?`<span class="chip" style="color:#00b4ff">ST↑${s.st_up_count}</span>`:'';
-      return `<div class="sector"><div class="sname">${s.name}</div>`+
+      return `<div class="sector" data-sector-open="${htmlSafe(s.name)}" role="button" tabindex="0" aria-label="查看${htmlSafe(s.name)}全部股票"><div class="sname">${htmlSafe(s.name)}<span class="sector-open-mark">›</span></div>`+
         `<div class="sbar"><div class="sfill ${dir}" style="width:${w}%;background:${col}"></div></div>`+
         `<div class="schg" style="color:${chgColor(s.avg_chg)}">${sign(s.avg_chg)}%</div>`+
-        `<div class="sleader">領漲 <b style="color:var(--txt)">${s.leader}</b>`+
+        `<div class="sleader">領漲 <b style="color:var(--txt)">${htmlSafe(s.leader)}</b>`+
         `<span class="chip">MA ${s.bull_pct}%</span>`+
         `<span class="chip" style="color:${scoreCol}">分${s.score}</span>`+
         `${sigBadge}${stBadge}</div></div>`;
@@ -2781,6 +2838,69 @@ if(SNAP){ loadHistory(); }
   let watchItems=_readLocalWatch().map(x=>({...x,group_id:x.group_id||'default'}));
   let watchGroups=_readLocalGroups(), activeWatchGroup='all', watchRows=new Map(), watchReq=0, watchNoticeTimer=null;
   const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  // ══ 看板產業列：按需讀取完整成員，不把 1,900 檔塞進主 state.json ══
+  const sectorModal=document.getElementById('sectorModal'), sectorClose=document.getElementById('sectorModalClose');
+  const sectorTitle=document.getElementById('sectorModalTitle'), sectorMeta=document.getElementById('sectorModalMeta');
+  const sectorList=document.getElementById('sectorMemberList'), sectorSortbar=document.getElementById('sectorSortbar');
+  let sectorRows=[], sectorSort='score', sectorReturnFocus=null, sectorReq=0;
+  const sectorNum=(v,d=1)=>v==null||Number.isNaN(Number(v))?'—':Number(v).toFixed(d);
+
+  function renderSectorMembers(){
+    const rows=[...sectorRows];
+    if(sectorSort==='gain')rows.sort((a,b)=>(b.chg??-Infinity)-(a.chg??-Infinity));
+    else if(sectorSort==='loss')rows.sort((a,b)=>(a.chg??Infinity)-(b.chg??Infinity));
+    else if(sectorSort==='code')rows.sort((a,b)=>String(a.code||'').localeCompare(String(b.code||''),'zh-Hant',{numeric:true}));
+    else rows.sort((a,b)=>(b.score??-Infinity)-(a.score??-Infinity));
+    if(!rows.length){sectorList.innerHTML='<div class="sector-member-loading">這個產業目前沒有可顯示的股票</div>';return;}
+    sectorList.innerHTML=rows.map(x=>{
+      const chg=x.chg, chgText=chg==null?'—':`${chg>0?'+':''}${sectorNum(chg,2)}%`;
+      const trend=x.st==='UP'?'多方':x.st==='DOWN'?'空方':'中性';
+      const trendColor=x.st==='UP'?'var(--up)':x.st==='DOWN'?'var(--dn)':'var(--dim)';
+      return `<button class="sector-member" type="button" data-sector-member="${safe(x.code)}" aria-label="開啟${safe(x.name||x.code)}個股詳情">`+
+        `<span class="sector-member-id"><b>${safe(x.name||x.code)}</b><small>${safe(x.code)}</small></span>`+
+        `<span class="sector-member-num sector-member-price">${sectorNum(x.price,2)}</span>`+
+        `<span class="sector-member-num" style="color:${chg==null?'var(--dim)':chgColor(chg)}">${chgText}</span>`+
+        `<span class="sector-member-num">${sectorNum(x.score,1)}</span>`+
+        `<span class="sector-member-num sector-member-rsi">${sectorNum(x.rsi,1)}</span>`+
+        `<span class="sector-member-state" style="color:${trendColor}">${trend}</span></button>`;
+    }).join('');
+  }
+
+  async function openSectorMembers(trigger){
+    const name=trigger?.dataset.sectorOpen;if(!name||!sectorModal)return;
+    const summary=(lastData?.sectors||[]).find(s=>s.name===name)||{};
+    sectorReturnFocus=trigger;sectorRows=[];sectorSort='score';
+    sectorSortbar.querySelectorAll('[data-sector-sort]').forEach(b=>b.classList.toggle('on',b.dataset.sectorSort==='score'));
+    sectorTitle.textContent=name+'產業股票';
+    sectorMeta.innerHTML=`<span>共 ${summary.count??'—'} 檔</span><span>平均漲跌 ${summary.avg_chg==null?'—':sign(summary.avg_chg)+'%'}</span><span>強弱分 ${summary.score??'—'}</span><span>站上 MA20 ${summary.bull_pct??'—'}%</span>`;
+    sectorList.innerHTML='<div class="sector-member-loading">載入完整產業名單中…</div>';
+    sectorModal.classList.add('show');sectorClose.focus();
+    const seq=++sectorReq;
+    try{
+      const url=MOCK?'sector_members.sample.json':'/api/sector?name='+encodeURIComponent(name);
+      const r=await fetch(url,{cache:'no-store'}),raw=await r.json();
+      const j=MOCK?{ok:true,name,updated_at:raw.updated_at,members:(raw.sectors||{})[name]||[]} : raw;
+      j.count=j.count??j.members?.length;
+      if(seq!==sectorReq)return;
+      if(!r.ok||!j.ok||!Array.isArray(j.members))throw new Error(j.error||'讀取失敗');
+      sectorRows=j.members;
+      const stamp=j.updated_at?String(j.updated_at).replace('T',' '):'';
+      sectorMeta.innerHTML=`<span>共 ${j.count??sectorRows.length} 檔</span><span>平均漲跌 ${summary.avg_chg==null?'—':sign(summary.avg_chg)+'%'}</span><span>強弱分 ${summary.score??'—'}</span><span>站上 MA20 ${summary.bull_pct??'—'}%</span>${stamp?`<span>資料 ${safe(stamp)}</span>`:''}`;
+      renderSectorMembers();
+    }catch(e){if(seq===sectorReq)sectorList.innerHTML=`<div class="sector-member-error">${safe(e.message||'產業名單讀取失敗')}<br><small>請先重新執行一次市場掃描，產生完整產業資料。</small></div>`;}
+  }
+  function closeSectorMembers(restore=true){
+    if(!sectorModal)return;++sectorReq;sectorModal.classList.remove('show');sectorRows=[];
+    if(restore&&sectorReturnFocus?.isConnected)sectorReturnFocus.focus();sectorReturnFocus=null;
+  }
+  document.addEventListener('click',e=>{const el=e.target.closest('.sector[data-sector-open]');if(el)openSectorMembers(el);});
+  document.addEventListener('keydown',e=>{const el=e.target.closest?.('.sector[data-sector-open]');if(el&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openSectorMembers(el);}});
+  sectorSortbar?.addEventListener('click',e=>{const b=e.target.closest('[data-sector-sort]');if(!b)return;sectorSort=b.dataset.sectorSort;sectorSortbar.querySelectorAll('[data-sector-sort]').forEach(x=>x.classList.toggle('on',x===b));renderSectorMembers();});
+  sectorList?.addEventListener('click',e=>{const row=e.target.closest('[data-sector-member]');if(!row)return;const code=row.dataset.sectorMember;closeSectorMembers(false);input.focus();pick(code,false);});
+  sectorClose?.addEventListener('click',()=>closeSectorMembers());
+  sectorModal?.addEventListener('click',e=>{if(e.target===sectorModal)closeSectorMembers();});
+
   const getWatch=()=>watchItems.slice();
   const saveLocalWatch=()=>localStorage.setItem('dh_watch',JSON.stringify(watchItems.map(x=>({code:x.code,name:x.name||'',group_id:x.group_id||'default'}))));
   const saveLocalGroups=()=>localStorage.setItem('dh_watch_groups',JSON.stringify(watchGroups));
@@ -3541,6 +3661,7 @@ if(SNAP){ loadHistory(); }
     if(e.key!=='Escape') return;
       if(termModal?.classList.contains('show')) closeTermHelp();
       else if(groupModal.classList.contains('show')) closeWatchGroupManager();
+      else if(sectorModal?.classList.contains('show')) closeSectorMembers();
       else if(modal.classList.contains('show')) closeModal();
       else if(drop.classList.contains('show')) hideDrop();
   });

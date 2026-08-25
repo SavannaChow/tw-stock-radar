@@ -40,6 +40,7 @@ CACHE_DIR = HERE / "cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 from storage import runtime_path
 STATE_FILE = runtime_path("state.json")
+SECTOR_MEMBERS_FILE = runtime_path("sector_members.json")
 SIG_LOG = runtime_path("signals_log.json")    # 已推過的訊號(去重)
 HIST_FILE = runtime_path("history.json")      # 當日已確認訊號流水(給看板回顧)
 
@@ -723,6 +724,20 @@ def _temp_label(t: float) -> tuple[str, str]:
     return "超弱", "#3b82f6"
 
 
+def _sector_member_rows(members: list[dict]) -> list[dict]:
+    """Return the complete lightweight member list for one industry."""
+    return [
+        {"code": s["code"], "name": s.get("name", ""),
+         "price": s.get("price"), "chg": s.get("chg"),
+         "score": s.get("score"), "rsi": s.get("rsi"),
+         "st": s.get("st"), "signal": s.get("signal"),
+         "consec": s.get("consec_buy_days") or 0}
+        for s in sorted(members,
+                        key=lambda x: (x.get("score") or 0, x.get("chg") or 0),
+                        reverse=True)
+    ]
+
+
 def build_state(data: dict[str, pd.DataFrame], rows: list[tuple[str, str, str]],
                 source: str = "live", mode: str = "daily",
                 drop_last: bool = False, confirmed_mode: bool = True,
@@ -854,6 +869,7 @@ def build_state(data: dict[str, pd.DataFrame], rows: list[tuple[str, str, str]],
         by_ind.setdefault(s["industry"], []).append(s)
     min_members = 3 if len(stocks) > 300 else 1
     sectors: list[dict] = []
+    sector_members: dict[str, list[dict]] = {}
     for ind, members in by_ind.items():
         if len(members) < min_members:
             continue
@@ -874,6 +890,7 @@ def build_state(data: dict[str, pd.DataFrame], rows: list[tuple[str, str, str]],
              "consec": s.get("consec_buy_days") or 0}
             for s in top5
         ]
+        sector_members[ind] = _sector_member_rows(members)
         sectors.append({
             "name": ind, "avg_chg": avg_chg, "bull_pct": bull,
             "score": avg_score, "count": len(members), "hue": industry_hue(ind),
@@ -1072,6 +1089,7 @@ def build_state(data: dict[str, pd.DataFrame], rows: list[tuple[str, str, str]],
             "components": components,
         },
         "sectors": sectors,
+        "_sector_members": sector_members,
         "strong": strong,
         "weak": weak,
         "ranks": ranks,
@@ -1261,6 +1279,7 @@ def run_once(push: bool = True, cache_only: bool = False, intraday: bool = False
     state = build_state(data, rows, source=source, mode=mode,
                         drop_last=drop_last, confirmed_mode=confirmed_mode,
                         chips_offline=cache_only)
+    sector_members = state.pop("_sector_members", None)
 
     # #1 訊號命中率回灌：記錄本輪新確認訊號 → 用快取價事後評估已平倉戰績 → 塞進 state["track"]
     try:
@@ -1269,6 +1288,14 @@ def run_once(push: bool = True, cache_only: bool = False, intraday: bool = False
     except Exception as e:
         print(f"[hunter] track 回灌略過：{type(e).__name__}: {e}")
 
+    # 完整產業名單獨立存放，避免約 1,900 檔成員重複塞進每 30 秒輪詢的 state.json。
+    # 先寫成員檔再換入新版 state，讓看板看到新時間戳時對應資料已經可讀。
+    if state.get("ok") and sector_members is not None:
+        _atomic_write_json(SECTOR_MEMBERS_FILE, {
+            "ok": True,
+            "updated_at": state.get("ts"),
+            "sectors": sector_members,
+        })
     _atomic_write_json(STATE_FILE, state)
     if not state.get("ok"):
         print(f"[hunter] ✗ 掃描無資料：{state.get('error')}")

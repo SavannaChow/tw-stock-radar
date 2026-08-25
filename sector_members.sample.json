@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "updated_at": "2026-06-30T13:35:00",
+  "sectors": {
+    "半導體": [
+      {"code": "2330", "name": "台積電", "price": 1085.0, "chg": 0.46, "score": 64.0, "rsi": 58.0, "st": "UP", "signal": null, "consec": 2},
+      {"code": "2454", "name": "聯發科", "price": 1450.0, "chg": 2.1, "score": 61.2, "rsi": 60.5, "st": "UP", "signal": "long", "consec": 5},
+      {"code": "2303", "name": "聯電", "price": 45.2, "chg": -0.5, "score": 48.0, "rsi": 44.0, "st": "DOWN", "signal": null, "consec": 0},
+      {"code": "3034", "name": "聯詠", "price": 512.0, "chg": 1.15, "score": 55.8, "rsi": 53.2, "st": "UP", "signal": null, "consec": 1}
+    ],
+    "金融保險": [
+      {"code": "2881", "name": "富邦金", "price": 91.5, "chg": 0.33, "score": 59.1, "rsi": 57.0, "st": "UP", "signal": null, "consec": 2},
+      {"code": "2882", "name": "國泰金", "price": 66.8, "chg": -0.3, "score": 52.4, "rsi": 49.5, "st": "UP", "signal": null, "consec": 0},
+      {"code": "2891", "name": "中信金", "price": 42.6, "chg": 0.71, "score": 57.3, "rsi": 55.1, "st": "UP", "signal": null, "consec": 1}
+    ],
+    "航運": [
+      {"code": "2618", "name": "長榮航", "price": 38.4, "chg": 1.2, "score": 54.0, "rsi": 51.2, "st": "UP", "signal": null, "consec": 0},
+      {"code": "2603", "name": "長榮", "price": 205.0, "chg": -1.4, "score": 43.5, "rsi": 41.0, "st": "DOWN", "signal": null, "consec": 0},
+      {"code": "2609", "name": "陽明", "price": 69.5, "chg": -0.8, "score": 41.8, "rsi": 39.7, "st": "DOWN", "signal": null, "consec": 0}
+    ]
+  }
+}

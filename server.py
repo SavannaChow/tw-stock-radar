@@ -27,6 +27,7 @@ from storage import runtime_path
 HERE = Path(__file__).resolve().parent
 _INDICES_CACHE: dict = {}          # /api/indices 60 秒 module 快取
 _WATCHLIST_CACHE: dict = {}        # 自選股完整資料 20 秒快取
+SECTOR_MEMBERS_FILE = runtime_path("sector_members.json")
 _RUNTIME_FILES = {
     "/state.json": runtime_path("state.json"),
     "/history.json": runtime_path("history.json"),
@@ -138,8 +139,28 @@ class Handler(SimpleHTTPRequestHandler):
         """動態 API：/api/stock、/api/search、/api/analyst。命中回 True(已回應)，否則 False(交還靜態服務)。
         query/analyst 在 handler 內 import(而非模組頂層)，讓查價/分析失敗絕不拖垮靜態看板服務。"""
         if path not in ("/api/stock", "/api/search", "/api/analyst", "/api/news",
-                        "/api/quote", "/api/indices", "/api/zones", "/api/watchlist"):
+                        "/api/quote", "/api/indices", "/api/zones", "/api/watchlist",
+                        "/api/sector"):
             return False
+        if path == "/api/sector":
+            name = ((qs.get("name") or [""])[0]).strip()
+            if not name:
+                self._send_json({"ok": False, "error": "缺少產業名稱"}, 400)
+                return True
+            try:
+                payload = json.loads(SECTOR_MEMBERS_FILE.read_text(encoding="utf-8"))
+                members = (payload.get("sectors") or {}).get(name)
+                if not isinstance(members, list):
+                    self._send_json({"ok": False, "error": f"找不到產業：{name}"}, 404)
+                else:
+                    self._send_json({"ok": True, "name": name,
+                                     "updated_at": payload.get("updated_at"),
+                                     "count": len(members), "members": members})
+            except FileNotFoundError:
+                self._send_json({"ok": False, "error": "產業成員資料尚未產生，請先執行掃描"}, 404)
+            except (OSError, ValueError, TypeError):
+                self._send_json({"ok": False, "error": "產業成員資料讀取失敗"}, 500)
+            return True
         if path == "/api/watchlist":
             details = (qs.get("details") or [""])[0].lower() in ("1", "true", "yes")
             live = (qs.get("live") or [""])[0].lower() in ("1", "true", "yes")
