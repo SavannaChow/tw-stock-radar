@@ -217,6 +217,16 @@
   .wl-manage-row.confirming .wl-delete-confirm{display:flex}.wl-delete-confirm .yes{color:var(--up)}.wl-group-manager-error{min-height:18px;font-size:12.5px;color:var(--up);margin-top:9px}
   @media(max-width:560px){.wl-group-modal{padding:35px 12px}.wl-group-dialog{padding:17px}.wl-manage-row{grid-template-columns:minmax(0,1fr) auto}.wl-manage-row>.danger{grid-column:2}.wl-manage-row>.save{grid-column:1/-1}.wl-delete-confirm{flex-wrap:wrap}}
 
+  /* ══ 指標解釋：先服務自選股卡片，靜態內容不碰資料流程 ══ */
+  .guide-head{display:flex;align-items:flex-start;gap:18px;margin-bottom:16px}.guide-title{font-family:var(--ttl);font-size:25px;font-weight:650}.guide-sub{font-size:14px;color:var(--dim);line-height:1.7;margin-top:6px;max-width:920px}
+  .guide-basics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:14px}.guide-basic{border:1px solid var(--line2);border-radius:var(--r-sm);padding:11px 13px;background:rgba(255,255,255,.02);font-size:13px;line-height:1.6;color:var(--dim)}.guide-basic b{display:block;color:var(--txt);font-size:14px;margin-bottom:2px}.guide-basic.warn{border-color:rgba(198,154,76,.32);background:rgba(198,154,76,.055)}
+  .guide-order{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:18px}.guide-step{position:relative;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 11px;background:rgba(0,0,0,.13)}.guide-step .n{font-family:var(--mono);font-size:11px;color:var(--acc2)}.guide-step b{display:block;font-size:14px;margin:3px 0}.guide-step span:last-child{font-size:12px;color:var(--dim);line-height:1.5}
+  .guide-section{margin-top:14px}.guide-section-h{display:flex;align-items:baseline;gap:9px;margin-bottom:8px;padding:0 2px}.guide-section-h h3{font-family:var(--ttl);font-size:18px;font-weight:650}.guide-section-h span{font-size:12px;color:var(--faint)}
+  .guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.guide-card{border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 14px;background:rgba(255,255,255,.018);min-width:0}.guide-card:hover{border-color:var(--line2);background:rgba(90,147,189,.035)}
+  .guide-card-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}.guide-card-h b{font-size:15px}.guide-code{font-family:var(--mono);font-size:10.5px;color:var(--acc2);border:1px solid rgba(90,147,189,.25);border-radius:8px;padding:2px 6px;margin-left:auto;white-space:nowrap}.guide-card p{font-size:12.5px;line-height:1.6;color:var(--dim);margin-top:5px}.guide-card p b{color:var(--txt);font-weight:600}.guide-read{margin-top:9px;border-left:2px solid var(--acc);padding:6px 8px;background:rgba(90,147,189,.055);font-family:var(--mono);font-size:11.5px;line-height:1.55;color:var(--txt)}.guide-risk{color:#c8a86b!important}.guide-foot{margin-top:18px;border:1px solid rgba(198,154,76,.25);border-radius:var(--r-sm);padding:12px 14px;background:rgba(198,154,76,.045);font-size:13px;line-height:1.65;color:var(--dim)}.guide-foot b{color:var(--gold)}
+  @media(max-width:980px){.guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.guide-order{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media(max-width:620px){.guide-head{display:block}.guide-basics,.guide-grid{grid-template-columns:1fr}.guide-order{grid-template-columns:repeat(2,minmax(0,1fr))}.guide-title{font-size:23px}.guide-card{padding:13px}.guide-section-h{display:block}.guide-section-h span{display:block;margin-top:2px}}
+
   .grid{display:grid;grid-template-columns:360px 1fr;gap:14px}
   @media(max-width:880px){.grid{grid-template-columns:1fr}}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);padding:15px 17px;
@@ -1085,6 +1095,7 @@
   <div class="tabs">
     <div class="tab active" data-v="board">看板 · LIVE</div>
     <div class="tab" data-v="watch">自選股 · WATCHLIST</div>
+    <div class="tab" data-v="guide">指標解釋 · GUIDE</div>
     <div class="tab" data-v="heat">板塊熱流 · FLOW MAP</div>
     <div class="tab" data-v="chips">法人資金流向 · INSTITUTIONS</div>
     <div class="tab" data-v="zones">交易專區 · TRADE ZONES</div>
@@ -1112,6 +1123,77 @@
       <div class="wl-summary" id="watchSummary"></div>
       <div class="wl-cards" id="watchCards"><div class="wl-empty" style="grid-column:1/-1"><b>尚無自選股</b>從上方搜尋個股，進入詳情後按「☆ 加入自選」。</div></div>
       <div class="zNote">訊號與健診為數據輔助，不代表投資建議；下單前仍應自行評估風險。</div>
+    </section>
+  </div>
+
+  <!-- ════ 指標解釋 view：第一版只說明自選股卡片 ════ -->
+  <div class="view" data-view="guide">
+    <section class="panel">
+      <div class="guide-head"><div>
+        <div class="guide-title">自選股指標快速指南</div>
+        <div class="guide-sub">用白話理解卡片上的數字：先排除資料不足與流動性風險，再看趨勢、追高、籌碼與基本面。指標是篩選工具，不是看到單一數字就買賣的答案。</div>
+      </div></div>
+
+      <div class="guide-basics">
+        <div class="guide-basic"><b>紅漲、綠跌</b>本看板採台股慣例；正負號比顏色更重要。</div>
+        <div class="guide-basic"><b>「—」不是 0</b>代表不適用、尚未公布或抓不到；資料不足不能當成安全。</div>
+        <div class="guide-basic warn"><b>行情可能延遲</b>看到「延遲行情」表示使用備援來源；不適合拿來追逐瞬間成交價。</div>
+      </div>
+
+      <div class="guide-order" aria-label="初學者看卡片順序">
+        <div class="guide-step"><span class="n">STEP 01</span><b>資料完整嗎</b><span>先看是否大量出現「—」。</span></div>
+        <div class="guide-step"><span class="n">STEP 02</span><b>容易進出嗎</b><span>看成交金額、成交量與價差。</span></div>
+        <div class="guide-step"><span class="n">STEP 03</span><b>趨勢明確嗎</b><span>看月線、季線、ADX 與強弱。</span></div>
+        <div class="guide-step"><span class="n">STEP 04</span><b>是否追太高</b><span>看 RSI、月線乖離與距年高。</span></div>
+        <div class="guide-step"><span class="n">STEP 05</span><b>誰在買、公司好嗎</b><span>最後交叉看籌碼與基本面。</span></div>
+      </div>
+
+      <div class="guide-section">
+        <div class="guide-section-h"><h3>行情與量能</h3><span>先知道今天發生什麼，以及這個價格能不能順利成交</span></div>
+        <div class="guide-grid">
+          <article class="guide-card"><div class="guide-card-h"><b>股價／漲跌幅</b><span class="guide-code">PRICE · %</span></div><p><b>是什麼：</b>目前或最近成交價，以及相對昨收的變化。</p><div class="guide-read">正值＝上漲｜負值＝下跌｜0%＝接近昨收</div><p class="guide-risk"><b>風險：</b>上漲不等於值得追，低價也不等於便宜；必須配合量、趨勢與估值。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>今開／最高／最低</b><span class="guide-code">OHLC</span></div><p><b>是什麼：</b>今天開盤價與盤中價格區間。</p><div class="guide-read">靠近最高＝當日偏強｜靠近最低＝當日偏弱｜區間大＝波動大</div><p class="guide-risk"><b>風險：</b>只代表今天的位置，不能單獨判斷明天方向。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>成交量</b><span class="guide-code">VOLUME</span></div><p><b>是什麼：</b>今天已成交的張數，反映市場參與程度。</p><div class="guide-read">量增價漲較有支撐｜爆量不漲可能有換手或賣壓</div><p class="guide-risk"><b>風險：</b>量小的股票可能難買難賣，停損時也不一定能順利成交。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>相對量</b><span class="guide-code">RELVOL</span></div><p><b>是什麼：</b>今日量和近期平常成交量的比較。</p><div class="guide-read">約 1x＝平常｜≥1.5x＝明顯活躍｜≥2x＝異常放量</div><p class="guide-risk"><b>風險：</b>放量本身沒有多空方向；放量下跌也可能是出貨。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>平均成交金額／買賣價差</b><span class="guide-code">LIQUIDITY</span></div><p><b>是什麼：</b>平均成交金額看流動性，價差看買價與賣價距離。</p><div class="guide-read">均額 &lt;3,000萬＝高風險｜3,000萬–1億＝留意｜價差 &gt;0.2%＝留意</div><p class="guide-risk"><b>風險：</b>流動性差會產生滑價；價差超過 0.5% 時進出成本偏高。</p></article>
+        </div>
+      </div>
+
+      <div class="guide-section">
+        <div class="guide-section-h"><h3>趨勢、動能與追高</h3><span>判斷方向是否清楚，以及現在的位置會不會太擁擠</span></div>
+        <div class="guide-grid">
+          <article class="guide-card"><div class="guide-card-h"><b>RSI</b><span class="guide-code">0–100</span></div><p><b>是什麼：</b>近期漲跌動能的強弱溫度計。</p><div class="guide-read">30–70＝常態｜&gt;70＝偏熱｜&lt;30＝偏弱或超賣</div><p class="guide-risk"><b>風險：</b>過熱可以繼續漲、超賣也能繼續跌；不是反轉保證。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>MA20 乖離</b><span class="guide-code">月線距離</span></div><p><b>是什麼：</b>股價離 20 日均線（月線）多遠。</p><div class="guide-read">正值＝月線上｜負值＝月線下｜絕對值越大＝偏離越遠</div><p class="guide-risk"><b>風險：</b>正乖離約 5% 以上常有追高壓力；仍須配合個股波動度。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>ADX</b><span class="guide-code">趨勢強度</span></div><p><b>是什麼：</b>衡量趨勢強不強，不負責告訴你漲或跌。</p><div class="guide-read">&lt;20＝趨勢弱｜20–25＝形成中｜&gt;25＝較明確｜&gt;40＝很強</div><p class="guide-risk"><b>風險：</b>高 ADX 也可能是強烈下跌，必須和「趨勢多方／空方」一起看。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>趨勢 多方／空方</b><span class="guide-code">SUPERTREND</span></div><p><b>是什麼：</b>以價格與 ATR 判斷目前偏多或偏空的跟隨型指標。</p><div class="guide-read">多方＝結構偏上｜空方＝結構偏下｜翻向＝趨勢可能改變</div><p class="guide-risk"><b>風險：</b>盤整時容易反覆翻向，需搭配 ADX 與成交量過濾。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>強弱分</b><span class="guide-code">0–100</span></div><p><b>是什麼：</b>整合趨勢、位置、動能與波動的相對分數。</p><div class="guide-read">高分＝近期相對強｜低分＝近期相對弱｜用於排序，不是預測報酬</div><p class="guide-risk"><b>風險：</b>高分股可能已漲多；不能忽略乖離、估值與停損。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>季線／距年高／月線 ATR</b><span class="guide-code">CHASE RISK</span></div><p><b>是什麼：</b>分別看中期趨勢、離一年高點多遠、以及股價離月線幾個正常波動幅度。</p><div class="guide-read">季線下＝偏弱｜接近年高＝可能強也可能擁擠｜≥2 ATR＝留意，≥3 ATR＝追高風險高</div><p class="guide-risk"><b>風險：</b>強勢不代表適合立刻追；可等待回檔或新的量價確認。</p></article>
+        </div>
+      </div>
+
+      <div class="guide-section">
+        <div class="guide-section-h"><h3>籌碼與基本面</h3><span>觀察資金方向與公司體質，但避免把單日買賣超當成答案</span></div>
+        <div class="guide-grid">
+          <article class="guide-card"><div class="guide-card-h"><b>外資／投信</b><span class="guide-code">淨買賣超</span></div><p><b>是什麼：</b>外資與投信當日買進減賣出的張數。</p><div class="guide-read">正值＝淨買超｜負值＝淨賣超｜連續性通常比單日數字重要</div><p class="guide-risk"><b>風險：</b>法人也會調節、避險或短線交易；買超不保證上漲。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>融資增減</b><span class="guide-code">MARGIN</span></div><p><b>是什麼：</b>散戶借錢買股票的部位每天增加或減少多少張。</p><div class="guide-read">正值＝融資增加｜負值＝融資減少｜法人賣、融資增要特別留意</div><p class="guide-risk"><b>風險：</b>高檔融資快速增加，遇到下跌時可能出現停損與追繳賣壓。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>近 10 日法人籌碼</b><span class="guide-code">CHIP TREND</span></div><p><b>是什麼：</b>外資加投信近 10 日累計買賣超，減少單日雜訊。</p><div class="guide-read">持續正值較有支撐｜持續負值代表籌碼偏弱</div><p class="guide-risk"><b>風險：</b>不同股票成交量差很多，需和平均量比較，不能只看張數大小。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>本益比</b><span class="guide-code">P/E</span></div><p><b>是什麼：</b>股價相對每股盈餘的倍數，代表市場願意付多少價格買一元獲利。</p><div class="guide-read">應和同產業、公司歷史區間比較｜≤0 或「—」通常不具解讀意義</div><p class="guide-risk"><b>風險：</b>低本益比可能是獲利即將衰退；高本益比也可能反映高成長預期。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>EPS／營收 YoY</b><span class="guide-code">FUNDAMENTALS</span></div><p><b>是什麼：</b>EPS 是每股獲利；營收 YoY 是本月營收較去年同月增減。</p><div class="guide-read">EPS &gt;0 且營收成長通常較健康｜營收年減需追原因</div><p class="guide-risk"><b>風險：</b>近四季 EPS ≤0 或營收年減超過 20%，卡片會提高警示；ETF 不適用個股判法。</p></article>
+        </div>
+      </div>
+
+      <div class="guide-section">
+        <div class="guide-section-h"><h3>波動、回撤與操作欄位</h3><span>先想最多能承受多少，再想可能賺多少</span></div>
+        <div class="guide-grid">
+          <article class="guide-card"><div class="guide-card-h"><b>ATR 波動率</b><span class="guide-code">ATR %</span></div><p><b>是什麼：</b>近期每天常見的價格波動幅度，占股價的百分比。</p><div class="guide-read">≤3%＝相對平穩｜3–5%＝留意｜&gt;5%＝高波動</div><p class="guide-risk"><b>風險：</b>ATR 越大，停損需留更大空間、部位通常應更小。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>60／120 日回撤</b><span class="guide-code">DRAWDOWN</span></div><p><b>是什麼：</b>這段期間從高點跌到低點最深曾跌多少。</p><div class="guide-read">越接近 0 越穩｜≤-12%＝留意｜≤-20%＝風險偏高</div><p class="guide-risk"><b>風險：</b>回撤是歷史壓力測試，不代表未來最大只會跌這麼多。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>健診等級</b><span class="guide-code">A–E</span></div><p><b>是什麼：</b>整合技術、籌碼、基本面與估值後的資料摘要。</p><div class="guide-read">A 較完整偏強 → E 較弱或風險較多｜同時看旁邊分數與資料完整度</div><p class="guide-risk"><b>風險：</b>等級是摘要，不是保證；資料不足時信心度會下降。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>做多／做空／等待確認</b><span class="guide-code">SIGNAL</span></div><p><b>是什麼：</b>技術條件是否形成方向性觸發。</p><div class="guide-read">做多＝偏多觸發｜做空／減碼＝偏空警示｜等待＝尚未共振</div><p class="guide-risk"><b>風險：</b>訊號不是下單命令；市場、籌碼與風報比不合時可以不交易。</p></article>
+          <article class="guide-card"><div class="guide-card-h"><b>停損／目標一／目標二</b><span class="guide-code">RISK PLAN</span></div><p><b>是什麼：</b>依 ATR 與訊號方向估算的退出和分段目標位置。</p><div class="guide-read">先決定停損與部位，再評估目標是否值得承擔風險</div><p class="guide-risk"><b>風險：</b>跳空或流動性不足時不一定能成交在設定價；不要用加碼攤平取代停損。</p></article>
+        </div>
+      </div>
+
+      <div class="guide-foot"><b>最重要的大方向：</b>沒有任何單一指標能保證不賠錢。對保守投資者，資料不足、流動性差、股價過度偏離均線、法人偏賣且融資增加、基本面轉弱，任何一項都足以讓你先不買；空手也是風險管理。</div>
     </section>
   </div>
 
