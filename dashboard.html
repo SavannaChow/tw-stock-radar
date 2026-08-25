@@ -871,10 +871,13 @@
     padding:5px 2px;border-top:1px solid rgba(120,160,220,.1)}
   .smChips .prow b{font-weight:400;color:var(--txt)}
   .smChips .tag{font-size:11px;padding:1px 7px;border-radius:5px;border:1px solid currentColor}
+  .smStat.term-help,.smChips .prow.term-help{cursor:help;transition:border-color .15s,background .15s}.smStat.term-help:hover,.smChips .prow.term-help:hover{border-color:var(--acc);background:rgba(90,147,189,.055)}.smStat.term-help:focus-visible,.smChips .prow.term-help:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}.smStat.term-help .k::after,.smChips .prow.term-help>span:first-child::after{content:' ?';font-family:var(--mono);font-size:9px;color:var(--acc2);opacity:.82}
+  .term-help-modal{position:fixed;inset:0;z-index:99;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(3,7,14,.74);backdrop-filter:blur(4px)}.term-help-modal.show{display:flex;animation:smfade .16s ease}.term-help-dialog{position:relative;width:100%;max-width:420px;border:1px solid var(--line2);border-radius:13px;padding:19px 20px;background:var(--panel);box-shadow:var(--bevel),var(--depth)}.term-help-close{position:absolute;right:11px;top:10px;width:30px;height:30px;border:1px solid var(--line2);border-radius:8px;background:rgba(255,255,255,.025);color:var(--dim);font-size:19px;cursor:pointer}.term-help-close:hover{color:var(--txt);border-color:var(--acc)}.term-help-kicker{font-family:var(--mono);font-size:10px;letter-spacing:1.2px;color:var(--acc2)}.term-help-title{font-family:var(--ttl);font-size:21px;font-weight:650;margin-top:5px;padding-right:34px}.term-help-text{font-size:13.5px;line-height:1.75;color:var(--dim);margin-top:9px}.term-help-note{font-size:10.5px;line-height:1.5;color:var(--faint);margin-top:11px;padding-top:9px;border-top:1px solid var(--hair)}
   @media(max-width:480px){
     .smCard{padding:17px 15px 18px}
     .smHead .sm-name{font-size:19px}
     .smQuote .sm-price{font-size:25px}
+    .term-help-modal{padding:12px}.term-help-dialog{padding:17px 16px}.term-help-title{font-size:20px}
   }
   /* ── 四師評分（內嵌於個股 modal） ────────────────────────── */
   .team-subhd{font-family:var(--mono);font-size:10.5px;color:var(--dim);letter-spacing:1.6px;text-transform:uppercase;margin:18px 0 10px;padding-top:16px;border-top:1px solid var(--hair);display:flex;align-items:center;gap:7px}
@@ -1429,6 +1432,17 @@
     <div class="guide-modal-meta"><span class="guide-importance" id="guideModalImportance"></span></div>
     <div class="guide-detail-grid" id="guideModalBody"></div>
     <div class="guide-modal-note">這些內容是閱讀指標的方法，不是個別股票的買賣建議。資料不完整時，應先降低判斷信心。</div>
+  </div>
+</div>
+
+<!-- 個股詳情內的術語快速解釋：小型共用浮層，不顯示或解讀當前數值 -->
+<div id="termHelpModal" class="term-help-modal" role="dialog" aria-modal="true" aria-labelledby="termHelpTitle" aria-describedby="termHelpText">
+  <div class="term-help-dialog">
+    <button id="termHelpClose" class="term-help-close" type="button" aria-label="關閉術語解釋" title="關閉 (ESC)">×</button>
+    <div class="term-help-kicker">術語快速解釋 · QUICK GUIDE</div>
+    <h3 id="termHelpTitle" class="term-help-title">術語</h3>
+    <div id="termHelpText" class="term-help-text"></div>
+    <div class="term-help-note">僅說明這個術語的核心用途，不解讀目前顯示的數值，也不構成買賣建議。</div>
   </div>
 </div>
 
@@ -2314,10 +2328,48 @@ if(SNAP){ loadHistory(); }
 (function(){
   const input=$('#searchInput'), drop=$('#acDrop'), box=$('#searchBox');
   const modal=$('#stkModal'), mBody=$('#smBody'), mClose=$('#smClose');
+  const termModal=$('#termHelpModal'), termTitle=$('#termHelpTitle'), termText=$('#termHelpText'), termClose=$('#termHelpClose');
   if(!input||!modal) return;
   if(SNAP) return; // 快照模式不需要互動查詢
 
   let acItems=[], acActive=-1, reqSeq=0, lastFocus=null;
+  let termReturnFocus=null;
+  const TERM_HELP={
+    'RSI':'Relative Strength Index（相對強弱指標），比較近期上漲與下跌動能，用來觀察短期力道與情緒溫度。',
+    'MA20':'Moving Average 20，最近 20 個交易日的平均價格，常被視為約一個月的市場平均成本。',
+    'MA60':'Moving Average 60，最近 60 個交易日的平均價格，常稱季線，用來觀察較中期的價格趨勢。',
+    'SuperTrend':'以價格和 ATR 波動度計算的趨勢跟隨指標，用來標示目前結構偏多或偏空。',
+    'MACD':'Moving Average Convergence Divergence（移動平均收斂發散），比較快慢均線差異，用來觀察趨勢與動能變化。',
+    'ADX':'Average Directional Index（平均趨向指標），衡量趨勢的強度；它本身不負責判斷上漲或下跌。',
+    '%B':'Bollinger Percent B（布林百分比），描述價格目前位於布林通道內外的相對位置。',
+    'ATR':'Average True Range（平均真實波幅），估算近期常見的價格波動幅度，主要用於衡量風險與停損空間。',
+    'OBV 量能':'On-Balance Volume（能量潮），把成交量依價格漲跌累積，觀察量能是否支持價格趨勢。',
+    'DMI 動向':'Directional Movement Index（動向指標），用正向與負向移動線比較多空方向；ADX 是同一套系統的趨勢強度部分。',
+    '威廉%R':'Williams Percent Range（威廉百分比），衡量收盤價在近期最高與最低區間中的位置，屬於短期動能指標。',
+    'CCI':'Commodity Channel Index（順勢指標），衡量價格偏離近期平均的程度，用來觀察動能與可能的極端狀態。',
+    '寶塔線':'以價格趨勢轉折改變紅綠柱狀態的圖形指標，核心用途是簡化短期多空方向，而不是預測價格目標。',
+    'EPS(近四季)':'Earnings Per Share（每股盈餘）的近四季合計，用來看公司最近一整年的每股獲利能力。',
+    'EPS(單季)':'Earnings Per Share（每股盈餘）的單一季度數字，用來觀察最近一季的獲利表現。',
+    'EPS 年增':'比較每股盈餘和去年同期的變化，用來觀察公司每股獲利是否正在成長或衰退。',
+    '營收 年增':'Revenue Year over Year，將本期營收與去年同期相比，用來觀察業務規模的年度成長方向。',
+    '營收 月增':'Revenue Month over Month，將本月營收與上月相比，用來觀察較短期的營運變化。',
+    '毛利率':'營收扣除直接成本後所剩毛利占營收的比例，用來觀察產品或服務本身的獲利空間。',
+    '營益率':'營業利益占營收的比例，納入營業費用後，用來觀察公司本業實際經營效率。',
+    '本益比 PE':'Price-to-Earnings Ratio，股價相對每股盈餘的倍數，是衡量價格相對獲利的常見估值工具。',
+    '股價淨值比 PB':'Price-to-Book Ratio，股價相對每股淨值的倍數，用來看市場為公司帳面淨資產支付多少價格。',
+    '殖利率':'Dividend Yield，現金股利相對股價的比例，用來描述持有股票可得到的現金配息報酬。',
+    '現金股利':'公司把部分盈餘以現金分配給股東的金額，通常以每股配發多少元表示。',
+    '股票股利':'公司以新增股票而非現金分配給股東，會增加持有股數，也會同步調整每股價格與股本。',
+    '除權息日':'股票開始不再包含本次股利或配股權利的日期，當日參考價會依法進行除權息調整。',
+    '法人連買':'外資、投信等法人連續多個交易日呈現淨買超，用來描述資金流入是否具有持續性。',
+    '法人淨買':'法人買進張數減去賣出張數後的結果，用來觀察法人當期資金是淨流入或淨流出。',
+    '濾網':'本看板依既定量價與籌碼條件做的篩選標記，用來表示資料是否通過預設門檻，不是交易所的官方指標。',
+    '融資增減':'投資人向券商借款買股的未償還部位變化，用來觀察市場槓桿資金是否增加或減少。',
+    '券資比':'融券餘額相對融資餘額的比例，用來觀察放空部位和融資多方部位之間的相對規模。',
+    '當沖比':'當日沖銷成交量占整體成交量的比例，用來觀察交易活動中短線當沖所占程度。',
+    '集保散戶':'依集保股權分散資料觀察較小持股級距的變化，作為散戶持股集中或流出的籌碼線索。',
+    '投信連買':'本地投信基金連續多個交易日淨買超，用來觀察投信資金是否持續進場。'
+  };
   const debounce=(fn,ms)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
 
   // 本地索引：後端無 /api（含 ?mock=1）時的降級來源，從最新 state 蒐集個股（含 ohlc/籌碼欄，足以驗證詳情面板）
@@ -2461,6 +2513,23 @@ if(SNAP){ loadHistory(); }
   function statCell(k,v,color){ if(v==null||v==='') return '';
     return `<div class="smStat"><span class="k">${k}</span><span class="v"${color?` style="color:${color}"`:''}>${v}</span></div>`; }
 
+  function markTermHelp(){
+    mBody.querySelectorAll('.smStat,.smChips .prow').forEach(el=>{
+      const label=(el.matches('.smStat')?el.querySelector('.k'):el.querySelector('span:first-child'))?.textContent.trim();
+      if(!label||!TERM_HELP[label])return;
+      el.classList.add('term-help');el.tabIndex=0;el.dataset.termHelp=label;el.setAttribute('role','button');
+      el.setAttribute('aria-haspopup','dialog');el.setAttribute('aria-label',`解釋「${label}」術語`);
+    });
+  }
+  function openTermHelp(el){
+    const label=el?.dataset.termHelp, text=TERM_HELP[label];if(!label||!text||!termModal)return;
+    termReturnFocus=el;termTitle.textContent=label;termText.textContent=text;termModal.classList.add('show');termClose.focus();
+  }
+  function closeTermHelp(restore=true){
+    if(!termModal)return;termModal.classList.remove('show');
+    if(restore&&termReturnFocus?.isConnected)termReturnFocus.focus();termReturnFocus=null;
+  }
+
   // 個股健診六宮格（四面向連續計分；分數用中性色階，紅綠只留給價格方向）
   function hzColor(v){ return v==null?'var(--faint)':(v>=65?'var(--acc2)':(v>=50?'var(--acc)':(v>=35?'var(--gold)':'var(--faint)'))); }
   function gradeColor(g){ return ({A:'var(--acc2)',B:'var(--acc)',C:'var(--gold)',D:'var(--dim)',E:'var(--faint)'})[g]||'var(--dim)'; }
@@ -2581,6 +2650,7 @@ if(SNAP){ loadHistory(); }
           ? `<div class="smSubhd">四維籌碼 · CHIPS</div><div class="smNote"><b>ETF／指數商品</b> · 無個股籌碼資料（法人・融資券・當沖・集保不適用），以上方價格・技術指標・日K為主要參考。</div>`
           : ''));
 
+    markTermHelp();
     lastFocus=document.activeElement;
     modal.classList.add('show');
     // 自選 ★ + 到價提醒
@@ -2603,7 +2673,7 @@ if(SNAP){ loadHistory(); }
     }
     try{ mClose.focus(); }catch(e){}
   }
-  function closeModal(){ modal.classList.remove('show'); mBody.innerHTML='';
+  function closeModal(){ closeTermHelp(false);modal.classList.remove('show'); mBody.innerHTML='';
     try{ (lastFocus&&lastFocus.focus)?lastFocus.focus():input.focus(); }catch(e){} }
 
   // ══ 自選股：伺服器持久化 + localStorage 舊資料自動遷移 ══
@@ -3363,11 +3433,16 @@ if(SNAP){ loadHistory(); }
   input.addEventListener('focus',()=>{ if(input.value.trim()&&acItems.length) drop.classList.add('show'); });
   document.addEventListener('click',e=>{ if(!box.contains(e.target)) hideDrop(); });
 
+  mBody.addEventListener('click',e=>{const el=e.target.closest('[data-term-help]');if(el){e.stopPropagation();openTermHelp(el);}});
+  mBody.addEventListener('keydown',e=>{const el=e.target.closest('[data-term-help]');if(el&&(e.key==='Enter'||e.key===' ')){e.preventDefault();e.stopPropagation();openTermHelp(el);}});
+  termClose?.addEventListener('click',closeTermHelp);
+  termModal?.addEventListener('click',e=>{if(e.target===termModal)closeTermHelp();});
   mClose.addEventListener('click',closeModal);
   modal.addEventListener('click',e=>{ if(e.target===modal) closeModal(); });
   document.addEventListener('keydown',e=>{
     if(e.key!=='Escape') return;
-      if(groupModal.classList.contains('show')) closeWatchGroupManager();
+      if(termModal?.classList.contains('show')) closeTermHelp();
+      else if(groupModal.classList.contains('show')) closeWatchGroupManager();
       else if(modal.classList.contains('show')) closeModal();
       else if(drop.classList.contains('show')) hideDrop();
   });
