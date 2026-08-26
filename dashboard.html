@@ -1876,9 +1876,11 @@ function chipLine(s){
 // 券資比警示等級：越高空方壓力越大(暖色,非紅綠語意)
 function shortRatioCls(v){ return v>=20?'warn3':(v>=12?'warn2':(v>=6?'warn1':'')); }
 // popover 籌碼/融資券下鑽列（連買 / 法人淨買 / 濾網 / 融資增減 / 券資比 / 當沖比）— 欄位缺則跳過
-function chipPopRows(s){
+function chipPopRows(s,expanded=false){
   const net=(s.instinv_net!=null)?s.instinv_net:((s.foreign_net!=null||s.trust_net!=null)?(s.foreign_net||0)+(s.trust_net||0):null);
   let r='';
+  if(expanded&&s.foreign_net!=null) r+=`<div class="prow"><span>外資買賣超</span><b style="color:${chgColor(s.foreign_net)}">${fmtNet(s.foreign_net)} 張</b></div>`;
+  if(expanded&&s.trust_net!=null) r+=`<div class="prow"><span>投信買賣超</span><b style="color:${chgColor(s.trust_net)}">${fmtNet(s.trust_net)} 張</b></div>`;
   if(s.consec_buy_days!=null) r+=`<div class="prow"><span>法人連買</span><b style="color:var(--up)">${s.consec_buy_days} 日</b></div>`;
   if(net!=null) r+=`<div class="prow"><span>法人淨買</span><b style="color:${chgColor(net)}">${fmtNet(net)} 張</b></div>`;
   if(s.chip_confirm||s.pool_pass){
@@ -2471,17 +2473,33 @@ if(SNAP){ loadHistory(); }
   let acItems=[], acActive=-1, reqSeq=0, lastFocus=null;
   let termReturnFocus=null;
   const TERM_HELP={
+    '今開':'今天第一筆撮合成交的價格，反映市場消化隔夜消息後的起始定價。',
+    '最高':'今天盤中曾經成交的最高價格，用來觀察買方當日最多把價格推到哪裡。',
+    '最低':'今天盤中曾經成交的最低價格，用來觀察賣方當日最多把價格壓到哪裡。',
+    '成交量':'今天已經成交的股票張數，反映市場參與程度；量本身沒有多空方向，要和價格變化一起看。',
+    '相對強弱 RSI':'Relative Strength Index（相對強弱指標），比較近期上漲與下跌動能，用來觀察短期力道與情緒溫度。',
     'RSI':'Relative Strength Index（相對強弱指標），比較近期上漲與下跌動能，用來觀察短期力道與情緒溫度。',
+    '十日線 MA10':'最近 10 個交易日的平均價格，反映約兩週的短期市場平均成本。',
+    '十日線乖離':'目前股價相對十日移動平均線的百分比距離，用來觀察短線價格偏離近期平均成本多少。',
+    '月線 MA20':'最近 20 個交易日的平均價格，常被視為約一個月的市場平均成本。',
+    '月線乖離':'目前股價相對二十日移動平均線的百分比距離，用來觀察價格偏離月線成本多少。',
     'MA20':'Moving Average 20，最近 20 個交易日的平均價格，常被視為約一個月的市場平均成本。',
+    '季線 MA60':'最近 60 個交易日的平均價格，常稱季線，用來觀察較中期的價格趨勢。',
     'MA60':'Moving Average 60，最近 60 個交易日的平均價格，常稱季線，用來觀察較中期的價格趨勢。',
+    '趨勢線':'SuperTrend，以價格和 ATR 波動度計算的趨勢跟隨指標，用來標示目前結構偏多或偏空。',
     'SuperTrend':'以價格和 ATR 波動度計算的趨勢跟隨指標，用來標示目前結構偏多或偏空。',
     'MACD':'Moving Average Convergence Divergence（移動平均收斂發散），比較快慢均線差異，用來觀察趨勢與動能變化。',
+    '趨勢強度 ADX':'Average Directional Index（平均趨向指標），衡量趨勢的強度；它本身不負責判斷上漲或下跌。',
     'ADX':'Average Directional Index（平均趨向指標），衡量趨勢的強度；它本身不負責判斷上漲或下跌。',
+    '布林位置 %B':'Bollinger Percent B（布林百分比），描述價格目前位於布林通道內外的相對位置。',
     '%B':'Bollinger Percent B（布林百分比），描述價格目前位於布林通道內外的相對位置。',
+    '平均波幅 ATR':'Average True Range（平均真實波幅），估算近期常見的價格波動幅度，主要用於衡量風險與停損空間。',
     'ATR':'Average True Range（平均真實波幅），估算近期常見的價格波動幅度，主要用於衡量風險與停損空間。',
+    '相對量':'今天成交量相對近期平均成交量的倍數，用來辨認今天是否比平常活躍。',
     'OBV 量能':'On-Balance Volume（能量潮），把成交量依價格漲跌累積，觀察量能是否支持價格趨勢。',
     'DMI 動向':'Directional Movement Index（動向指標），用正向與負向移動線比較多空方向；ADX 是同一套系統的趨勢強度部分。',
     '威廉%R':'Williams Percent Range（威廉百分比），衡量收盤價在近期最高與最低區間中的位置，屬於短期動能指標。',
+    '順勢指標 CCI':'Commodity Channel Index（順勢指標），衡量價格偏離近期平均的程度，用來觀察動能與可能的極端狀態。',
     'CCI':'Commodity Channel Index（順勢指標），衡量價格偏離近期平均的程度，用來觀察動能與可能的極端狀態。',
     '寶塔線':'以價格趨勢轉折改變紅綠柱狀態的圖形指標，核心用途是簡化短期多空方向，而不是預測價格目標。',
     'EPS(近四季)':'Earnings Per Share（每股盈餘）的近四季合計，用來看公司最近一整年的每股獲利能力。',
@@ -2499,6 +2517,8 @@ if(SNAP){ loadHistory(); }
     '除權息日':'股票開始不再包含本次股利或配股權利的日期，當日參考價會依法進行除權息調整。',
     '法人連買':'外資、投信等法人連續多個交易日呈現淨買超，用來描述資金流入是否具有持續性。',
     '法人淨買':'法人買進張數減去賣出張數後的結果，用來觀察法人當期資金是淨流入或淨流出。',
+    '外資買賣超':'外資買進張數減去賣出張數後的淨額，用來觀察外資當日資金方向；不代表每筆交易都是投資判斷。',
+    '投信買賣超':'本地投信基金買進張數減去賣出張數後的淨額，用來觀察投信當日資金方向。',
     '濾網':'本看板依既定量價與籌碼條件做的篩選標記，用來表示資料是否通過預設門檻，不是交易所的官方指標。',
     '融資增減':'投資人向券商借款買股的未償還部位變化，用來觀察市場槓桿資金是否增加或減少。',
     '券資比':'融券餘額相對融資餘額的比例，用來觀察放空部位和融資多方部位之間的相對規模。',
@@ -2507,13 +2527,21 @@ if(SNAP){ loadHistory(); }
     '投信連買':'本地投信基金連續多個交易日淨買超，用來觀察投信資金是否持續進場。'
   };
   const TERM_RANGE={
+    '相對強弱 RSI':'固定範圍 0–100。30–70 通常視為中間區；>70 常稱偏熱／超買；<30 常稱偏弱／超賣。超買或超賣不等於一定反轉。',
     'RSI':'固定範圍 0–100。30–70 通常視為中間區；>70 常稱偏熱／超買；<30 常稱偏弱／超賣。超買或超賣不等於一定反轉。',
+    '十日線乖離':'沒有所有股票通用的安全區間。0% 代表股價等於十日線；正值在十日線上、負值在十日線下。絕對值越大，短線偏離平均成本越遠。',
+    '月線乖離':'沒有所有股票通用的安全區間。0% 代表股價等於月線；正值在月線上、負值在月線下。應和個股自身波動及 ATR 一起比較。',
     'MACD':'沒有固定上下限，但 0 軸是通用分界：>0 代表快線整體位於慢線上方，<0 則相反；更重視方向、交叉與柱體變化。',
+    '趨勢強度 ADX':'通常落在 0–100。<20 趨勢偏弱；20–25 可能形成中；>25 趨勢較明確；>40 趨勢很強。高值可能是強漲，也可能是強跌。',
     'ADX':'通常落在 0–100。<20 趨勢偏弱；20–25 可能形成中；>25 趨勢較明確；>40 趨勢很強。高值可能是強漲，也可能是強跌。',
+    '布林位置 %B':'常見基準為 0–1。0 代表布林下軌，0.5 接近中線，1 代表上軌；<0 跌出下軌，>1 突破上軌，因此實際值可以超出 0–1。',
     '%B':'常見基準為 0–1。0 代表布林下軌，0.5 接近中線，1 代表上軌；<0 跌出下軌，>1 突破上軌，因此實際值可以超出 0–1。',
+    '平均波幅 ATR':'ATR 原始價格值從 0 起，沒有跨股票通用高低。換算 ATR÷股價後，本看板以 ≤3% 較平穩、3–5% 留意、>5% 高波動。',
     'ATR':'ATR 原始價格值從 0 起，沒有跨股票通用高低。換算 ATR÷股價後，本看板以 ≤3% 較平穩、3–5% 留意、>5% 高波動。',
+    '相對量':'1x 約等於近期平常量；≥1.5x 明顯活躍；≥2x 異常放量。盤中數字會隨成交累積，收盤後較容易公平比較。',
     'DMI 動向':'+DI 與 −DI 通常各在 0–100。+DI 高於 −DI 表示向上移動較強，−DI 高於 +DI 表示向下移動較強；差距與 ADX 要一起看。',
     '威廉%R':'固定範圍 −100 至 0。−20 至 0 常稱超買區；−80 至 −100 常稱超賣區；中間區代表價格位於近期區間中段。',
+    '順勢指標 CCI':'理論上沒有固定上下限。−100 至 +100 常視為一般波動區；>+100 表示正向動能較強／偏熱；<−100 表示負向動能較強／偏弱。',
     'CCI':'理論上沒有固定上下限。−100 至 +100 常視為一般波動區；>+100 表示正向動能較強／偏熱；<−100 表示負向動能較強／偏弱。',
     'EPS 年增':'>0% 代表每股盈餘較去年同期成長；0% 附近代表大致持平；<0% 代表衰退。極大百分比可能來自去年基期很低。',
     '營收 年增':'>0% 代表營收較去年同期成長；0% 附近代表持平；<0% 代表年減。不同產業沒有共同的「優秀百分比」。',
@@ -2583,7 +2611,7 @@ if(SNAP){ loadHistory(); }
   }
 
   // 選取個股：真後端 /api/stock 拉完整分析；失敗或本地項→用已載入 state 的個股物件降級
-  async function pick(code,local){
+  async function pick(code,local,seed=null){
     hideDrop(); input.value=code;
     let data=null;
     if(!local){
@@ -2594,6 +2622,11 @@ if(SNAP){ loadHistory(); }
     }
     if(!data){ const {by}=localIndex(); data=by.get(code)||null; }
     if(!data){ showHint('讀取 '+code+' 失敗 · 詳情需連後端（非 mock）'); return; }
+    // 從自選股開啟時，沿用卡片剛抓到的盤中行情與籌碼，讓詳情數字和卡片一致。
+    if(seed){
+      const liveKeys=['price','chg','open','high','low','volume','rsi','ma20','adx','relvol','foreign_net','trust_net','margin_chg','pe'];
+      const merged={...data};liveKeys.forEach(k=>{if(seed[k]!=null)merged[k]=seed[k];});data=merged;
+    }
     openModal(data);
     triggerQuote(data);        // 即時五檔(證交所 MIS)非同步載入
     triggerTeamAnalysis(data); // 傳整個個股物件：後端無 strategy 時可用現價當參考、mock 亦可造樣本
@@ -2666,6 +2699,14 @@ if(SNAP){ loadHistory(); }
   const fx=(v,d)=>(v==null||v===''||(typeof v==='number'&&isNaN(v)))?null:Number(v).toFixed(d);
   function statCell(k,v,color){ if(v==null||v==='') return '';
     return `<div class="smStat"><span class="k">${k}</span><span class="v"${color?` style="color:${color}"`:''}>${v}</span></div>`; }
+
+  function buildMarketGrid(s){
+    const val=(v,d=2)=>fx(v,d)??'—';
+    const vol=s.volume==null?'—':Number(s.volume).toLocaleString('en-US')+' 張';
+    return `<div class="smSubhd">今日行情</div><div class="smGrid">`+
+      statCell('今開',val(s.open))+statCell('最高',val(s.high),'var(--up)')+
+      statCell('最低',val(s.low),'var(--dn)')+statCell('成交量',vol)+`</div>`;
+  }
 
   function markTermHelp(){
     mBody.querySelectorAll('.smStat,.smChips .prow').forEach(el=>{
@@ -2756,25 +2797,31 @@ if(SNAP){ loadHistory(); }
     const macd=(s.macd!=null?s.macd:s.macd_hist);
     const stTxt=s.st?({UP:'翻多',DOWN:'翻空'}[s.st]||'中性'):null;
     const stCol=s.st==='UP'?'var(--up)':(s.st==='DOWN'?'var(--dn)':'var(--dim)');
+    const gap=(ma)=>s.price!=null&&ma?((Number(s.price)/Number(ma)-1)*100):null;
+    const ma10Gap=gap(s.ma10), ma20Gap=gap(s.ma20);
     const stats=[
-      statCell('RSI',fx(s.rsi,1), s.rsi!=null?(s.rsi>=50?'var(--up)':'var(--dn)'):null),
-      statCell('MA20',fx(s.ma20,2)),
-      statCell('MA60',fx(s.ma60,2)),
-      statCell('SuperTrend',stTxt,stCol),
+      statCell('相對強弱 RSI',fx(s.rsi,1), s.rsi!=null?(s.rsi>=50?'var(--up)':'var(--dn)'):null),
+      statCell('十日線 MA10',fx(s.ma10,2)),
+      statCell('十日線乖離',ma10Gap==null?null:sign(Number(ma10Gap.toFixed(1)))+'%',ma10Gap==null?null:chgColor(ma10Gap)),
+      statCell('月線 MA20',fx(s.ma20,2)),
+      statCell('月線乖離',ma20Gap==null?null:sign(Number(ma20Gap.toFixed(1)))+'%',ma20Gap==null?null:chgColor(ma20Gap)),
+      statCell('季線 MA60',fx(s.ma60,2)),
+      statCell('趨勢線',stTxt,stCol),
       statCell('MACD',fx(macd,2), macd!=null?chgColor(macd):null),
-      statCell('ADX',fx(s.adx,1), s.adx!=null?(s.adx>=25?'var(--gold)':'var(--dim)'):null),
-      statCell('%B',fx(pctB,2)),
-      statCell('ATR',fx(s.atr,2)),
+      statCell('趨勢強度 ADX',fx(s.adx,1), s.adx!=null?(s.adx>=25?'var(--gold)':'var(--dim)'):null),
+      statCell('相對量',s.relvol==null?null:fx(s.relvol,1)+'x',s.relvol>=1.5?'var(--gold)':null),
+      statCell('布林位置 %B',fx(pctB,2)),
+      statCell('平均波幅 ATR',fx(s.atr,2)),
       // 擴充指標(對齊三竹多指標)：OBV/DMI/威廉%R/CCI/寶塔線
       (s.obv_trend?statCell('OBV 量能',s.obv_trend==='up'?'量增':'量縮',s.obv_trend==='up'?'var(--up)':'var(--dn)'):''),
       (s.dmi_signal?statCell('DMI 動向',`${s.dmi_signal} ${s.plus_di}/${s.minus_di}`,s.dmi_signal==='多'?'var(--up)':'var(--dn)'):''),
       (s.williams_r!=null?statCell('威廉%R',`${fx(s.williams_r,0)} ${s.williams_zone||''}`,s.williams_zone==='超買'?'var(--up)':(s.williams_zone==='超賣'?'var(--dn)':null)):''),
-      (s.cci!=null?statCell('CCI',`${fx(s.cci,0)} ${s.cci_zone||''}`,s.cci_zone==='超買'?'var(--up)':(s.cci_zone==='超賣'?'var(--dn)':null)):''),
+      (s.cci!=null?statCell('順勢指標 CCI',`${fx(s.cci,0)} ${s.cci_zone||''}`,s.cci_zone==='超買'?'var(--up)':(s.cci_zone==='超賣'?'var(--dn)':null)):''),
       (s.tower_signal?statCell('寶塔線',s.tower_signal,/紅|多/.test(s.tower_signal)?'var(--up)':'var(--dn)'):''),
     ].filter(Boolean).join('');
     // 基本面區塊(EPS/營收/毛利/估值/股利，對齊三竹財務指標；缺資料整區不顯示)
     const fund=buildFundGrid(s);
-    const chips=chipPopRows(s);
+    const chips=chipPopRows(s,true);
 
     mBody.innerHTML=
       `<div class="smHead"><span class="sm-code">${s.code}</span><span class="sm-name">${s.name||''}</span>`+
@@ -2791,18 +2838,19 @@ if(SNAP){ loadHistory(); }
       (s.reason?`<div class="smReason">${s.reason}</div>`:'')+
       `<div id="smQuoteBox"></div>`+
       buildHealthCard(s.health)+
+      buildMarketGrid(s)+
       (hasK?`<div class="smKwrap"><div class="smKtabs">`+
         `<span class="smKtab on" data-k="d">日K</span>`+
         (Array.isArray(s.ohlc_w)&&s.ohlc_w.length>=2?`<span class="smKtab" data-k="w">週K</span>`:'')+
         (Array.isArray(s.ohlc_m)&&s.ohlc_m.length>=2?`<span class="smKtab" data-k="m">月K</span>`:'')+
         `</div><canvas class="smKline"></canvas><div class="smKlegend"><span class="ma">— MA20</span><span class="smKcap">近 ${s.ohlc.length} 根日K · 紅漲綠跌</span></div></div>`:'')+
-      `<div class="smSubhd">技術指標 · INDICATORS</div>`+
+      `<div class="smSubhd">技術指標</div>`+
       `<div class="smGrid">${stats||'<div class="acHint" style="grid-column:1/-1">指標明細需連後端（非 mock）</div>'}</div>`+
       fund+
       (chips
-        ? `<div class="smSubhd">四維籌碼 · CHIPS</div><div class="smChips">${chips}</div>`
+        ? `<div class="smSubhd">四維籌碼</div><div class="smChips">${chips}</div>`
         : (isETF
-          ? `<div class="smSubhd">四維籌碼 · CHIPS</div><div class="smNote"><b>ETF／指數商品</b> · 無個股籌碼資料（法人・融資券・當沖・集保不適用），以上方價格・技術指標・日K為主要參考。</div>`
+          ? `<div class="smSubhd">四維籌碼</div><div class="smNote"><b>ETF／指數商品</b> · 無個股籌碼資料（法人・融資券・當沖・集保不適用），以上方價格・技術指標・日K為主要參考。</div>`
           : ''));
 
     markTermHelp();
@@ -3088,7 +3136,7 @@ if(SNAP){ loadHistory(); }
     cards.innerHTML=(rows.length?rows.map(watchCard).join(''):empty)+(error?`<div class="wl-error" style="grid-column:1/-1">${safe(error)}</div>`:'');
     cards.querySelectorAll('[data-unwatch]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();toggleWatch(el.dataset.unwatch);}));
     cards.querySelectorAll('[data-watch-group-select]').forEach(el=>{el.addEventListener('click',e=>e.stopPropagation());el.addEventListener('change',e=>{e.stopPropagation();moveWatchItem(el.dataset.watchGroupSelect,el.value,el);});});
-    cards.querySelectorAll('[data-watch-open]').forEach(el=>el.addEventListener('click',()=>pick(el.dataset.watchOpen)));
+    cards.querySelectorAll('[data-watch-open]').forEach(el=>el.addEventListener('click',()=>pick(el.dataset.watchOpen,false,watchRows.get(el.dataset.watchOpen)||null)));
   }
 
   async function fetchWatchlistDetails(){

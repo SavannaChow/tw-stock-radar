@@ -295,18 +295,19 @@ def _merge_tdcc(code: str) -> dict:
     return out
 
 
-# ── 完整指標補齊(ma20/ma60/macd/atr；adx/%b 已在 core) ───────────────────────
+# ── 完整指標補齊(ma10/ma20/ma60/macd/atr；adx/%b 已在 core) ──────────────────
 def _full_indicators(df, live: bool) -> dict:
-    """在與 _analyse_core 同一個『已收盤』序列上補算 ma20/ma60/macd/atr，重用 scan 的 helper。
+    """在與 _analyse_core 同一個『已收盤』序列上補算 ma10/ma20/ma60/macd/atr，重用 scan 的 helper。
     前端契約：macd 與 macd_hist 都給純量；完整字典另存 macd_detail(前端可忽略)。"""
     full = scan._lower(df.tail(180).reset_index(drop=True))
     closed = full.iloc[:-1] if (live and len(full) > 22) else full
-    ma = scan.calc_ma(closed, periods=[20, 60])
+    ma = scan.calc_ma(closed, periods=[10, 20, 60])
     macd = scan.calc_macd(closed)
     atr = scan._atr_last(closed, scan.CHAND_LEN)
-    m20, m60 = ma["ma"].get(20), ma["ma"].get(60)
+    m10, m20, m60 = ma["ma"].get(10), ma["ma"].get(20), ma["ma"].get(60)
     m_line, m_hist = macd.get("macd"), macd.get("histogram")
     return {
+        "ma10": round(m10, 2) if m10 is not None else None,
         "ma20": round(m20, 2) if m20 is not None else None,
         "ma60": round(m60, 2) if m60 is not None else None,
         "atr": round(atr, 2) if atr is not None else None,
@@ -314,6 +315,21 @@ def _full_indicators(df, live: bool) -> dict:
         "macd_hist": round(m_hist, 3) if m_hist is not None else None,  # 柱狀(純量)
         "macd_detail": macd,     # {macd, signal_line, histogram, crossover, trend}
     }
+
+
+def _latest_session(df) -> dict:
+    """回傳最近一根日 K 的 OHLCV；成交量統一轉成台股常用的張。"""
+    try:
+        row = scan._lower(df.tail(1).reset_index(drop=True)).iloc[-1]
+        volume = float(row["volume"])
+        return {
+            "open": round(float(row["open"]), 2),
+            "high": round(float(row["high"]), 2),
+            "low": round(float(row["low"]), 2),
+            "volume": int(round(volume / 1000)) if volume == volume else None,
+        }
+    except (KeyError, IndexError, TypeError, ValueError):
+        return {"open": None, "high": None, "low": None, "volume": None}
 
 
 def _extended_indicators(df, live: bool) -> dict:
@@ -374,6 +390,7 @@ def analyze_stock(code: str, live: bool = False) -> dict:
     tdcc = _merge_tdcc(resolved)
     fund = _merge_fundamentals(resolved)
     ind = _full_indicators(df, live)
+    session = _latest_session(df)
     ext = _extended_indicators(df, live)
     try:
         import risk as _risk
@@ -387,6 +404,7 @@ def analyze_stock(code: str, live: bool = False) -> dict:
         # ── 卡片核心欄位(對齊 scan._card / _sig，前端 popover 可直接重用) ──
         "code": resolved, "name": name, "industry": industry,
         **fund,
+        **session,
         "price": core["price"], "chg": core["chg"], "rsi": core["rsi"],
         "score": core["score"], "st": core["st"],
         "spark": core["spark"], "ohlc": core.get("ohlc"),
