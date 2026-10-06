@@ -148,11 +148,16 @@ def _run_bounded(fn, timeout: float, default=None):
     """在硬性 timeout 內跑 fn；逾時/例外都回 default(逾時的背景執行緒任其自然結束，主線程不等)。
     互動查詢絕不可被單一慢速網路呼叫無限拖住。"""
     from concurrent.futures import ThreadPoolExecutor
+    ex = ThreadPoolExecutor(max_workers=1)
+    future = ex.submit(fn)
     try:
-        with ThreadPoolExecutor(max_workers=1) as ex:
-            return ex.submit(fn).result(timeout=timeout)
+        return future.result(timeout=timeout)
     except Exception:
+        future.cancel()
         return default
+    finally:
+        # 不等待卡住的網路執行緒；否則 context manager 退出時仍會阻塞 API 回應。
+        ex.shutdown(wait=False, cancel_futures=True)
 
 
 # 短期 df 記憶化：開一檔詳情前端會同時打 /api/stock + /api/analyst，兩者都 _load_df 同一檔
@@ -171,6 +176,7 @@ def _load_df(code: str, live: bool, yf_timeout: float = 10.0):
     if hit and (_t.monotonic() - hit[0]) < _DF_TTL:
         return hit[1]
     df = scan._read_cache(code)
+    cached_df = df
     # 快取過時檢查：非精選股每日不刷新→快取可能停在數週前的舊價(盟立/微星實測停在06-11)。
     # 最後一筆若距今 > 5 天，視為過時、丟棄改抓官方最新(twstock)，避免顯示舊價。
     if df is not None and len(df):
@@ -189,6 +195,9 @@ def _load_df(code: str, live: bool, yf_timeout: float = 10.0):
                 got = scan._bulk_yf([code], ".TWO")
             return got.get(code)
         df = _run_bounded(_fetch, timeout=yf_timeout)
+        # Synology 網路或行情來源暫時失敗時，寧可回舊快取，也不要讓自選股整張卡片消失。
+        if df is None:
+            df = cached_df
     if df is None:
         return None
     if live:

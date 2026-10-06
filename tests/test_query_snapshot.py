@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -32,6 +33,15 @@ class QuerySnapshotTests(unittest.TestCase):
             "low": 29.0,
             "volume": 2345,
         })
+
+    def test_stale_cache_is_used_when_refresh_fails(self):
+        frame = self._history()
+        frame.index = pd.date_range("2026-08-01", periods=len(frame), freq="B")
+        query._DF_MEMO.clear()
+        with patch("query.scan._read_cache", return_value=frame), \
+             patch("query.scan._bulk_yf", return_value={}):
+            result = query._load_df("2330", live=False, yf_timeout=0.01)
+        self.assertIs(result, frame)
 
 
 if __name__ == "__main__":

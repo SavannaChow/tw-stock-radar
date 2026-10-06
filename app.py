@@ -11,6 +11,7 @@ app.py — 台股數據獵手「桌面 app」一鍵啟動
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 import time
 import threading
@@ -32,6 +33,8 @@ from server import Handler               # 重用看板 handler  # noqa: E402
 
 PORT = int(os.environ.get("RADAR_PORT", "8899"))
 HOST = os.environ.get("RADAR_HOST", "127.0.0.1")
+FRESHEN_TIMEOUT_SECONDS = 20 * 60
+FRESHEN_RETRY_SECONDS = 30 * 60
 
 
 def _market_hours() -> bool:
@@ -47,22 +50,53 @@ def worker():
     rows = scan.load_full_universe()     # 全市場(~1900 檔上市櫃)
     last_fresh: date | None = None
     zones_day: date | None = None
+    freshen_proc: subprocess.Popen | None = None
+    freshen_started = 0.0
+    freshen_retry_at = 0.0
+
+    def start_freshen() -> subprocess.Popen:
+        """快取刷新獨立程序執行；外部資料源卡住不能拖死看板掃描。"""
+        print("[app] 每日刷新快取已在背景啟動…")
+        return subprocess.Popen(
+            [sys.executable, str(HERE / "scan.py"), "--freshen", "--full"],
+            cwd=str(HERE),
+        )
+
     print(f"[app] 背景掃描啟動（全市場 {len(rows)} 檔）")
     while True:
         mh = _market_hours()
         try:
             today = date.today()
-            if last_fresh != today:      # 每天刷一次快取，讓當日漲跌幅正確
+            if freshen_proc is not None:
+                rc = freshen_proc.poll()
+                elapsed = time.monotonic() - freshen_started
+                if rc is not None:
+                    if rc == 0:
+                        last_fresh = today
+                        print("[app] 每日快取刷新完成")
+                    else:
+                        freshen_retry_at = time.monotonic() + FRESHEN_RETRY_SECONDS
+                        print(f"[app] 快取刷新失敗（exit {rc}）；30 分鐘後重試")
+                    freshen_proc = None
+                elif elapsed > FRESHEN_TIMEOUT_SECONDS:
+                    freshen_proc.terminate()
+                    try:
+                        freshen_proc.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        freshen_proc.kill()
+                    freshen_retry_at = time.monotonic() + FRESHEN_RETRY_SECONDS
+                    freshen_proc = None
+                    print("[app] 快取刷新超過 20 分鐘，已停止；30 分鐘後重試")
+            if (freshen_proc is None and last_fresh != today
+                    and time.monotonic() >= freshen_retry_at):
                 cache_count = len(list(scan.CACHE_DIR.glob("*.csv")))
                 if cache_count < 500:
                     print(f"[app] ⚠ 快取僅 {cache_count} 檔（期望 1900+）")
                     print("[app] ⚠ 請先執行： python prefill_cache.py")
-                    print("[app] ⚠ 約 20 分鐘，完成後重啟 app 即可看到全市場 1900+ 支")
-                print("[app] 每日刷新快取中…")
-                n = scan.freshen_cache(rows)
-                print(f"[app] 快取已更新 {n} 檔")
-                last_fresh = today
-            scan.run_once(push=True, realtime=True)   # 證交所即時價覆蓋最後一根
+                freshen_proc = start_freshen()
+                freshen_started = time.monotonic()
+            # 快取刷新在獨立程序進行，主看板永遠先以既有快取寫出最新 state.json。
+            scan.run_once(push=True, realtime=True, refresh_if_stale=False)
             # 交易專區(當沖/短線/長線 全市場選股)：每日建一次(選股非 tick 敏感，~30s 不卡看板)
             if zones_day != today:
                 try:

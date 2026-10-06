@@ -91,10 +91,11 @@ class Handler(SimpleHTTPRequestHandler):
             row.setdefault("name", item.get("name") or code)
             row["added_at"] = item.get("added_at")
             row["group_id"] = item.get("group_id") or watchlist.DEFAULT_GROUP_ID
-            quote = realtime_quote.fetch_quote(code) if (live and realtime_quote) else None
-            # Synology／部分機房可能被 MIS 主動斷線；退回 yfinance 1 分 K 的延遲
-            # OHLCV。沒有五檔時不偽造價差，且保留歷史分析已有的漲跌幅。
-            if live and realtime_quote and not quote:
+            # 自選股是整批 API：MIS 若慢，每檔最多等 3 秒；多檔時不退 yfinance 1 分 K，
+            # 否則整批可能讓瀏覽器先斷線。失敗時保留本地分析／快取資料。
+            quote = realtime_quote.fetch_quote(code, timeout=3) if (live and realtime_quote) else None
+            # 只有一檔自選時才啟用較慢的分時備援；多檔卡片不讓它拖住整批結果。
+            if live and realtime_quote and not quote and len(items) == 1:
                 quote = realtime_quote.fetch_intraday_quote(code)
             if quote:
                 quote_chg = quote.get("chg_pct")

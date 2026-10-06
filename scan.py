@@ -1240,7 +1240,8 @@ def push_new_signals(state: dict) -> int:
 
 # ── 主程式 ────────────────────────────────────────────────────────────────
 def run_once(push: bool = True, cache_only: bool = False, intraday: bool = False,
-             full: bool = True, realtime: bool = False) -> dict:
+             full: bool = True, realtime: bool = False,
+             refresh_if_stale: bool = True) -> dict:
     t0 = time.time()
     if full and intraday:
         print("[hunter] 全市場(~1900檔)盤中分時不切實際→自動改日線")
@@ -1255,10 +1256,12 @@ def run_once(push: bool = True, cache_only: bool = False, intraday: bool = False
         mode = "intraday_rt" if _market_open_now() else "realtime"
         mode_txt = "盤中即時(證交所)" if mode == "intraday_rt" else "即時同步(證交所·盤後)"
         # 強制確保前一根=前一交易日(否則當日漲跌幅基準錯)；快取太舊先 freshen
-        if not _cache_fresh_enough(rows):
+        if refresh_if_stale and not _cache_fresh_enough(rows):
             print("[hunter] 快取落後前一交易日，先刷新…")
             nf = freshen_cache(rows)
             print(f"[hunter] 快取已更新 {nf} 檔")
+        elif not refresh_if_stale and not _cache_fresh_enough(rows):
+            print("[hunter] 快取尚待背景刷新；本輪先用現有快取產出看板")
         print(f"[hunter] 載入宇宙資料（{scope_txt}／{mode_txt}）…")
         data = load_universe_data(rows, use_cache_only=True, intraday=False)
         nrt = apply_realtime(data)
