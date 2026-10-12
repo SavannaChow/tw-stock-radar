@@ -1160,6 +1160,7 @@
     <div class="spacer"></div>
     <!-- 主題 / 提示音 / 桌面通知開關（狀態存 localStorage） -->
     <div class="togs">
+      <button class="tog" id="refreshData" type="button" title="立即更新看板資料" aria-label="立即更新看板資料">↻</button>
       <button class="tog" id="togTheme" type="button" title="切換淺色主題" aria-label="切換淺色主題">☀</button>
       <button class="tog" id="togSound" title="新訊號提示音 開/關">🔔</button>
       <button class="tog" id="togNotify" title="桌面通知 開/關">🖥</button>
@@ -2324,7 +2325,26 @@ function renderChips(c){
 }
 
 // ── 主資料載入 ──
-let lastTs=null, prevSigCodes=new Set(), lastData=null, lastTemp=null;
+let lastTs=null, prevSigCodes=new Set(), lastData=null, lastTemp=null, dashboardRefreshPending=false;
+function setDashboardRefreshButton(pending){
+  const b=$('#refreshData'); if(!b)return;
+  b.disabled=pending; b.textContent=pending?'⏳':'↻';
+  b.title=pending?'背景更新中…':'立即更新看板資料';
+}
+async function requestDashboardRefresh(){
+  if(dashboardRefreshPending)return;
+  setDashboardRefreshButton(true);
+  try{
+    const r=await fetch('/api/refresh',{method:'POST',cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    dashboardRefreshPending=true;
+    $('#upd').textContent='手動更新已排入背景工作…';
+  }catch(e){
+    setDashboardRefreshButton(false);
+    $('#upd').textContent='無法排入更新，請稍後重試';
+  }
+}
+$('#refreshData')?.addEventListener('click',requestDashboardRefresh);
 async function load(){
   try{
     const r=await fetch(STATE_URL+'?_='+Date.now(),{cache:'no-store'});
@@ -2332,8 +2352,9 @@ async function load(){
     resetCountdown();
     if(!d.ok){$('#upd').textContent='等待第一輪掃描…';return;}
     $('#wmDate').textContent=d.date||(d.ts||'').slice(0,10);
-    if(d.ts===lastTs){$('#upd').textContent='最後更新 '+d.ts.replace('T',' ');return;}
+    if(d.ts===lastTs){$('#upd').textContent=dashboardRefreshPending?'手動更新中…':'最後更新 '+d.ts.replace('T',' ');return;}
     lastTs=d.ts;
+    if(dashboardRefreshPending){dashboardRefreshPending=false;setDashboardRefreshButton(false);}
 
     const g=d.gauge;
     // 專業終端：溫度色改用低飽和三階（冷鋼藍→中灰→暖磚紅），不吃後端霓虹色

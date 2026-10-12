@@ -166,5 +166,33 @@ class TestWatchlistGroupAPI(unittest.TestCase):
         self.assertTrue(row["quote_delayed"])
 
 
+class TestRefreshAPI(unittest.TestCase):
+    def test_refresh_only_creates_queue_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            request = Path(tmp) / "refresh.request.json"
+            handler = _FakeHandler("/api/refresh")
+            with patch.object(server, "REFRESH_REQUEST_FILE", request):
+                server.Handler.do_POST(handler)
+
+            payload = json.loads(handler.wfile.getvalue().decode("utf-8"))
+            self.assertEqual(handler.status, 202)
+            self.assertTrue(payload["queued"])
+            self.assertTrue(request.exists())
+            self.assertIn("requested_at", json.loads(request.read_text(encoding="utf-8")))
+
+    def test_status_uses_runtime_status_file_without_loading_query(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            status = Path(tmp) / "status.json"
+            status.write_text(json.dumps({"scan": {"running": True}}), encoding="utf-8")
+            handler = _FakeHandler("/api/status")
+            with patch.object(server, "STATUS_FILE", status):
+                handled = server.Handler._handle_api(handler, "/api/status", {})
+
+        payload = json.loads(handler.wfile.getvalue().decode("utf-8"))
+        self.assertTrue(handled)
+        self.assertEqual(handler.status, 200)
+        self.assertTrue(payload["scan"]["running"])
+
+
 if __name__ == "__main__":
     unittest.main()

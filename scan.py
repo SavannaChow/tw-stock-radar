@@ -375,7 +375,10 @@ def freshen_cache(rows: list[tuple[str, str, str]]) -> int:
                 comb = comb[~comb.index.duplicated(keep="last")].sort_index()
             else:
                 comb = fresh
-            comb.to_csv(path)
+            # 刷新與前台掃描可同時進行；以 replace 避免讀到半寫完的 CSV。
+            tmp = path.with_suffix(path.suffix + ".tmp")
+            comb.to_csv(tmp)
+            os.replace(tmp, path)
             written += 1
         except Exception:
             continue
@@ -1330,6 +1333,8 @@ def main():
     ap.add_argument("--cache", action="store_true", help="只讀快取不連網(日線)")
     ap.add_argument("--intraday", action="store_true", help="盤中 15 分 K(yfinance，延遲約15分)")
     ap.add_argument("--realtime", action="store_true", help="跟市場同步(證交所即時價覆蓋，盤中秒級)")
+    ap.add_argument("--no-refresh-if-stale", action="store_true",
+                    help="快取落後時不在本程序刷新；供背景監控程序使用")
     ap.add_argument("--full", action="store_true", help="掃全市場(~1900檔上市櫃，twstock 產業別)")
     ap.add_argument("--freshen", action="store_true", help="只刷新快取(近期日線合併進twdata/cache)後結束")
     args = ap.parse_args()
@@ -1340,7 +1345,8 @@ def main():
         print(f"[hunter] 快取已更新 {n} 檔")
         return
     run_once(push=not args.no_push, cache_only=args.cache,
-             intraday=args.intraday, full=args.full, realtime=args.realtime)
+             intraday=args.intraday, full=args.full, realtime=args.realtime,
+             refresh_if_stale=not args.no_refresh_if_stale)
 
 
 if __name__ == "__main__":

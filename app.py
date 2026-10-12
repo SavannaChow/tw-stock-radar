@@ -11,6 +11,7 @@ app.py — 台股數據獵手「桌面 app」一鍵啟動
 from __future__ import annotations
 
 import os
+import json
 import subprocess
 import sys
 import time
@@ -28,13 +29,18 @@ try:
 except Exception:
     pass
 
-import scan                              # noqa: E402
 from server import Handler               # 重用看板 handler  # noqa: E402
+from storage import runtime_path         # noqa: E402
 
 PORT = int(os.environ.get("RADAR_PORT", "8899"))
 HOST = os.environ.get("RADAR_HOST", "127.0.0.1")
 FRESHEN_TIMEOUT_SECONDS = 20 * 60
 FRESHEN_RETRY_SECONDS = 30 * 60
+SCAN_TIMEOUT_SECONDS = 15 * 60
+SCAN_RETRY_SECONDS = 2 * 60
+ZONES_TIMEOUT_SECONDS = 10 * 60
+STATUS_FILE = runtime_path("status.json")
+REFRESH_REQUEST_FILE = runtime_path("refresh.request.json")
 
 
 def _market_hours() -> bool:
@@ -45,14 +51,41 @@ def _market_hours() -> bool:
     return 9 * 60 <= hm <= 13 * 60 + 35
 
 
+def _write_status(**values) -> None:
+    """原子寫入背景工作狀態，讓網頁/維運能判斷是否卡住。"""
+    values["updated_at"] = datetime.now().isoformat(timespec="seconds")
+    tmp = STATUS_FILE.with_suffix(STATUS_FILE.suffix + ".tmp")
+    try:
+        tmp.write_text(json.dumps(values, ensure_ascii=False), encoding="utf-8")
+        os.replace(tmp, STATUS_FILE)
+    except OSError:
+        pass
+
+
+def _stop_process(proc: subprocess.Popen, label: str) -> None:
+    proc.terminate()
+    try:
+        proc.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+    print(f"[app] {label}逾時，已停止；稍後會重試")
+
+
 def worker():
-    """背景掃描迴圈：每天刷快取 + 即時同步掃描 + 推播 + 每日全市場交易專區。"""
-    rows = scan.load_full_universe()     # 全市場(~1900 檔上市櫃)
+    """監督所有耗時工作；任何資料源卡住，都不能把 app 的背景線卡死。"""
     last_fresh: date | None = None
     zones_day: date | None = None
     freshen_proc: subprocess.Popen | None = None
     freshen_started = 0.0
     freshen_retry_at = 0.0
+    scan_proc: subprocess.Popen | None = None
+    scan_started = 0.0
+    scan_started_at: str | None = None
+    next_scan_at = 0.0
+    scan_reason = ""
+    last_scan: dict = {"result": "尚未執行"}
+    zones_proc: subprocess.Popen | None = None
+    zones_started = 0.0
 
     def start_freshen() -> subprocess.Popen:
         """快取刷新獨立程序執行；外部資料源卡住不能拖死看板掃描。"""
@@ -62,7 +95,20 @@ def worker():
             cwd=str(HERE),
         )
 
-    print(f"[app] 背景掃描啟動（全市場 {len(rows)} 檔）")
+    def start_scan(reason: str) -> subprocess.Popen:
+        """掃描一定在子程序；遠端資料源斷線時可被監督程序殺掉。"""
+        print(f"[app] 啟動{reason}全市場掃描…")
+        return subprocess.Popen(
+            [sys.executable, str(HERE / "scan.py"), "--full", "--realtime",
+             "--no-refresh-if-stale"],
+            cwd=str(HERE),
+        )
+
+    def start_zones() -> subprocess.Popen:
+        print("[app] 交易專區在背景產生…")
+        return subprocess.Popen([sys.executable, str(HERE / "zones.py"), "--full"], cwd=str(HERE))
+
+    print("[app] 背景工作監督器啟動（全市場掃描均可逾時停止）")
     while True:
         mh = _market_hours()
         try:
@@ -79,38 +125,81 @@ def worker():
                         print(f"[app] 快取刷新失敗（exit {rc}）；30 分鐘後重試")
                     freshen_proc = None
                 elif elapsed > FRESHEN_TIMEOUT_SECONDS:
-                    freshen_proc.terminate()
-                    try:
-                        freshen_proc.wait(timeout=5)
-                    except subprocess.TimeoutExpired:
-                        freshen_proc.kill()
+                    _stop_process(freshen_proc, "快取刷新")
                     freshen_retry_at = time.monotonic() + FRESHEN_RETRY_SECONDS
                     freshen_proc = None
-                    print("[app] 快取刷新超過 20 分鐘，已停止；30 分鐘後重試")
             if (freshen_proc is None and last_fresh != today
                     and time.monotonic() >= freshen_retry_at):
-                cache_count = len(list(scan.CACHE_DIR.glob("*.csv")))
+                cache_count = len(list((HERE / "cache").glob("*.csv")))
                 if cache_count < 500:
                     print(f"[app] ⚠ 快取僅 {cache_count} 檔（期望 1900+）")
                     print("[app] ⚠ 請先執行： python prefill_cache.py")
                 freshen_proc = start_freshen()
                 freshen_started = time.monotonic()
-            # 快取刷新在獨立程序進行，主看板永遠先以既有快取寫出最新 state.json。
-            scan.run_once(push=True, realtime=True, refresh_if_stale=False)
-            # 交易專區(當沖/短線/長線 全市場選股)：每日建一次(選股非 tick 敏感，~30s 不卡看板)
-            if zones_day != today:
-                try:
-                    import zones
-                    z = zones.build_zones(full=True, use_cache_only=True)
-                    print(f"[app] 交易專區已產生（全市場 {z['universe_n']} 檔）")
-                    zones_day = today
-                except Exception as e:
-                    print(f"[app] 交易專區產生略過：{type(e).__name__}: {e}")
+
+            # 手動請求是排隊訊號；掃描中的請求保留到下一輪，不丟失。
+            manual_requested = REFRESH_REQUEST_FILE.exists()
+            if scan_proc is not None:
+                rc = scan_proc.poll()
+                elapsed = time.monotonic() - scan_started
+                if rc is not None:
+                    scan_proc = None
+                    last_scan = {"result": "完成" if rc == 0 else "失敗", "exit_code": rc,
+                                 "reason": scan_reason,
+                                 "finished_at": datetime.now().isoformat(timespec="seconds")}
+                    if rc == 0:
+                        print("[app] 全市場掃描完成")
+                        next_scan_at = time.monotonic() + (2 * 60 if _market_hours() else 30 * 60)
+                        if zones_day != today and zones_proc is None:
+                            zones_proc = start_zones()
+                            zones_started = time.monotonic()
+                    else:
+                        next_scan_at = time.monotonic() + SCAN_RETRY_SECONDS
+                        print(f"[app] 全市場掃描失敗（exit {rc}）；2 分鐘後重試")
+                elif elapsed > SCAN_TIMEOUT_SECONDS:
+                    _stop_process(scan_proc, "全市場掃描")
+                    scan_proc = None
+                    last_scan = {"result": "逾時停止", "reason": scan_reason,
+                                 "finished_at": datetime.now().isoformat(timespec="seconds")}
+                    next_scan_at = time.monotonic() + SCAN_RETRY_SECONDS
+
+            if zones_proc is not None:
+                rc = zones_proc.poll()
+                elapsed = time.monotonic() - zones_started
+                if rc is not None:
+                    zones_proc = None
+                    if rc == 0:
+                        zones_day = today
+                        print("[app] 交易專區已產生")
+                    else:
+                        print(f"[app] 交易專區失敗（exit {rc}）；下輪掃描後重試")
+                elif elapsed > ZONES_TIMEOUT_SECONDS:
+                    _stop_process(zones_proc, "交易專區產生")
+                    zones_proc = None
+
+            due = time.monotonic() >= next_scan_at
+            if scan_proc is None and (manual_requested or due):
+                scan_reason = "手動" if manual_requested else ("盤中" if mh else "例行")
+                scan_proc = start_scan(scan_reason)
+                scan_started = time.monotonic()
+                scan_started_at = datetime.now().isoformat(timespec="seconds")
+                if manual_requested:
+                    try:
+                        REFRESH_REQUEST_FILE.unlink()
+                    except FileNotFoundError:
+                        pass
+            _write_status(
+                scan={"running": scan_proc is not None, "reason": scan_reason,
+                      "started_at": scan_started_at if scan_proc else None},
+                last_scan=last_scan,
+                freshen={"running": freshen_proc is not None},
+                zones={"running": zones_proc is not None, "completed_for": str(zones_day) if zones_day else None},
+                manual_request_queued=REFRESH_REQUEST_FILE.exists(),
+            )
         except Exception as e:
             print(f"[app] 本輪錯誤（續跑）：{type(e).__name__}: {e}")
-        wait = 2 if mh else 30
-        print(f"[app] {datetime.now():%H:%M:%S} 本輪結束，{wait} 分後再掃（{'盤中即時' if mh else '盤後'}）")
-        time.sleep(wait * 60)
+        # 5 秒輪詢一次，讓手動更新不必等到下一個盤中/盤後週期。
+        time.sleep(5)
 
 
 def main():

@@ -17,6 +17,7 @@ import os
 import sys
 import time
 import webbrowser
+from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -28,6 +29,8 @@ HERE = Path(__file__).resolve().parent
 _INDICES_CACHE: dict = {}          # /api/indices 60 秒 module 快取
 _WATCHLIST_CACHE: dict = {}        # 自選股完整資料 20 秒快取
 SECTOR_MEMBERS_FILE = runtime_path("sector_members.json")
+STATUS_FILE = runtime_path("status.json")
+REFRESH_REQUEST_FILE = runtime_path("refresh.request.json")
 _RUNTIME_FILES = {
     "/state.json": runtime_path("state.json"),
     "/history.json": runtime_path("history.json"),
@@ -140,9 +143,17 @@ class Handler(SimpleHTTPRequestHandler):
         """動態 API：/api/stock、/api/search、/api/analyst。命中回 True(已回應)，否則 False(交還靜態服務)。
         query/analyst 在 handler 內 import(而非模組頂層)，讓查價/分析失敗絕不拖垮靜態看板服務。"""
         if path not in ("/api/stock", "/api/search", "/api/analyst", "/api/news",
-                        "/api/quote", "/api/indices", "/api/zones", "/api/watchlist",
+                        "/api/quote", "/api/indices", "/api/zones", "/api/watchlist", "/api/status",
                         "/api/sector"):
             return False
+        if path == "/api/status":
+            try:
+                self._send_json({"ok": True, **json.loads(STATUS_FILE.read_text(encoding="utf-8"))})
+            except FileNotFoundError:
+                self._send_json({"ok": True, "running": False, "message": "背景工作尚未回報狀態"})
+            except (OSError, ValueError, TypeError):
+                self._send_json({"ok": False, "error": "背景工作狀態讀取失敗"}, 500)
+            return True
         if path == "/api/sector":
             name = ((qs.get("name") or [""])[0]).strip()
             if not name:
@@ -323,6 +334,17 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         split = urlsplit(self.path)
+        if split.path == "/api/refresh":
+            # 只寫入一個小型排程旗標；不在 HTTP request 內做網路抓取。
+            try:
+                tmp = REFRESH_REQUEST_FILE.with_suffix(REFRESH_REQUEST_FILE.suffix + ".tmp")
+                tmp.write_text(json.dumps({"requested_at": datetime.now().isoformat(timespec="seconds")}),
+                               encoding="utf-8")
+                os.replace(tmp, REFRESH_REQUEST_FILE)
+                self._send_json({"ok": True, "queued": True, "message": "已排入背景更新"}, 202)
+            except OSError:
+                self._send_json({"ok": False, "error": "無法建立更新排程"}, 500)
+            return
         if split.path not in ("/api/watchlist", "/api/watchlist/groups"):
             self.send_error(404)
             return
